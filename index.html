@@ -8,93 +8,153 @@
 <link rel="icon" href="data:," />
 <title>ali-yeni · Staging Monitör</title>
 <style>
+  /* AirMed marka (navy→mauve) · register: product · restrained color, amaçlı hareket */
   :root{
     --navy:#26296b; --mid:#34306e; --mauve:#5a3a56;
-    --bg:#0d0e1a; --card:rgba(255,255,255,.055); --card-bd:rgba(255,255,255,.10);
-    --ink:#eef0fb; --dim:#9aa0c4; --faint:#6b6f93;
-    --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --idle:#6b7280;
-    --r:18px;
+    --bg:#0c0d18; --panel:#13142a; --panel-2:#171933;
+    --bd:rgba(255,255,255,.09); --bd-soft:rgba(255,255,255,.055);
+    --ink:#f0f1fb; --dim:#9ea4c8; --faint:#676d92;
+    /* warm advances (ch09): koşan iş sıcak/öne çıkar; kuyruk amber; biten geri çekilir */
+    --run:#f5b942; --run-bg:rgba(245,185,66,.10);
+    --queue:#7aa2ff; --queue-bg:rgba(122,162,255,.10);
+    --ok:#3ddc97; --warn:#f5b942; --bad:#fb7185; --idle:#5b6079;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{
     font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
     color:var(--ink); background:var(--bg);
-    background-image:radial-gradient(1200px 600px at 15% -10%, #2a2c70 0%, transparent 55%),
-                     radial-gradient(1000px 600px at 110% 10%, #5a3a56 0%, transparent 50%),
-                     linear-gradient(160deg,#101126,#0b0c16);
-    min-height:100vh; padding:env(safe-area-inset-top) 14px 40px;
+    background-image:radial-gradient(900px 480px at 8% -8%, #23265e 0%, transparent 55%),
+                     radial-gradient(760px 460px at 112% 4%, #4a3149 0%, transparent 52%);
+    min-height:100vh; padding:env(safe-area-inset-top) 14px 48px;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:760px;margin:0 auto}
-  header{display:flex;align-items:center;gap:12px;padding:18px 4px 12px}
-  .logo{width:38px;height:38px;border-radius:11px;flex:0 0 auto;
-    background:linear-gradient(150deg,var(--navy),var(--mauve));
-    display:grid;place-items:center;font-weight:800;letter-spacing:.5px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
-  h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.2px}
+  .wrap{max-width:780px;margin:0 auto}
+  header{display:flex;align-items:center;gap:12px;padding:18px 2px 10px}
+  .logo{width:36px;height:36px;border-radius:10px;flex:0 0 auto;font-weight:800;
+    background:linear-gradient(150deg,var(--navy),var(--mauve));display:grid;place-items:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.4)}
+  h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
   .sub{font-size:12px;color:var(--dim);margin-top:1px}
-  .gear{margin-left:auto;background:var(--card);border:1px solid var(--card-bd);color:var(--dim);
-    width:38px;height:38px;border-radius:11px;font-size:17px;cursor:pointer}
-  .gear:active{transform:scale(.94)}
+  .gear{margin-left:auto;background:var(--panel);border:1px solid var(--bd);color:var(--dim);
+    width:38px;height:38px;border-radius:10px;font-size:17px;cursor:pointer}
+  .gear:active{transform:scale(.93)}
 
-  .freshbar{display:flex;align-items:center;gap:10px;margin:4px 4px 16px;font-size:13px;color:var(--dim)}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--idle);box-shadow:0 0 0 0 rgba(52,211,153,.5)}
-  .dot.live{background:var(--ok);animation:pulse 2s infinite}
-  .dot.stale{background:var(--bad)}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.45)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+  .fresh{display:flex;align-items:center;gap:9px;margin:2px 2px 18px;font-size:12.5px;color:var(--dim)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--idle);flex:0 0 auto}
+  .dot.live{background:var(--ok);animation:pulse 2.4s infinite}
+  .dot.stale{background:var(--bad);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,220,151,.5)}70%{box-shadow:0 0 0 6px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
 
-  .grid{display:grid;gap:12px}
-  .cards{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-  .card{background:var(--card);border:1px solid var(--card-bd);border-radius:var(--r);
-    padding:14px 15px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-  .card h2{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
+  /* ---- hero: İŞ AKIŞI (dominance ch06 — en büyük, en üstte, en yüksek kontrast) ---- */
+  .hero{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--bd);
+    border-radius:20px;padding:16px 16px 8px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+  .hero-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .hero-head h2{font-size:13px;letter-spacing:.5px;margin:0;font-weight:700}
+  .chips{margin-left:auto;display:flex;gap:7px}
+  .chip{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+  .chip.q{color:var(--queue);background:var(--queue-bg)}
+  .chip.r{color:var(--run);background:var(--run-bg)}
+  .chip b{font-variant-numeric:tabular-nums}
 
-  .metric{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-  .metric .lbl{font-size:13px;color:var(--dim)}
-  .big{font-size:26px;font-weight:750;line-height:1}
-  .unit{font-size:13px;color:var(--dim);font-weight:500}
-  .bar{height:7px;border-radius:6px;background:rgba(255,255,255,.09);margin-top:10px;overflow:hidden}
-  .bar > i{display:block;height:100%;border-radius:6px;transition:width .5s ease,background .3s}
-  .kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);font-size:13px}
-  .kv:first-of-type{border-top:0}
-  .kv .v{color:var(--ink);font-weight:600}
-  .muted{color:var(--dim)}
+  .job{display:flex;align-items:flex-start;gap:12px;padding:13px 4px;border-top:1px solid var(--bd-soft);position:relative}
+  .job:first-of-type{border-top:0}
+  .job .acc{width:3px;align-self:stretch;border-radius:3px;flex:0 0 auto;margin:1px 0}
+  .job.run .acc{background:var(--run)}
+  .job.queue .acc{background:var(--queue);opacity:.55}
+  .job-main{flex:1;min-width:0}
+  .job-name{font-size:17px;font-weight:700;line-height:1.2;letter-spacing:-.1px;word-break:break-word}
+  .job-meta{font-size:12px;color:var(--dim);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 8px}
+  .job-meta .b{color:var(--ink);font-weight:600}
+  .progress{height:4px;border-radius:4px;background:rgba(255,255,255,.07);margin-top:10px;overflow:hidden}
+  .progress > i{display:block;height:100%;width:40%;border-radius:4px;
+    background:linear-gradient(90deg,transparent,var(--run),transparent);animation:shimmer 1.5s linear infinite}
+  @keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+  .job-side{flex:0 0 auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .elapsed{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--run)}
+  .job.queue .elapsed{color:var(--queue)}
 
-  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
-    padding:3px 9px;border-radius:999px;letter-spacing:.3px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.3px;white-space:nowrap}
   .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
-  .p-ok{color:var(--ok);background:rgba(52,211,153,.12)}
-  .p-bad{color:var(--bad);background:rgba(248,113,113,.13)}
-  .p-warn{color:var(--warn);background:rgba(251,191,36,.13)}
-  .p-idle{color:var(--idle);background:rgba(107,114,128,.15)}
+  .p-run{color:var(--run);background:var(--run-bg)}
+  .p-run::before{animation:pulse 2s infinite}
+  .p-queue{color:var(--queue);background:var(--queue-bg)}
+  .p-queue::before{animation:blink 1.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .p-ok{color:var(--ok);background:rgba(61,220,151,.12)}
+  .p-bad{color:var(--bad);background:rgba(251,113,133,.13)}
+  .p-warn{color:var(--warn);background:rgba(245,185,66,.13)}
+  .p-idle{color:var(--idle);background:rgba(91,96,121,.16)}
+  .deploy{color:#fff;background:linear-gradient(150deg,var(--navy),var(--mauve));padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700}
 
-  .row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid rgba(255,255,255,.06)}
-  .row:first-child{border-top:0}
-  .row .name{font-weight:600;font-size:14px}
-  .row .meta{font-size:12px;color:var(--dim);margin-top:2px}
-  .row .right{margin-left:auto;text-align:right;font-size:12px;color:var(--dim);white-space:nowrap}
-  a.run{text-decoration:none;color:inherit;display:block}
+  .calm{display:flex;align-items:center;gap:10px;padding:18px 4px 22px;color:var(--faint);font-size:13.5px}
+  .calm .dot{background:var(--ok);animation:pulse 2.4s infinite}
 
-  .section-title{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);margin:22px 6px 10px}
-  .empty{color:var(--faint);font-size:13px;padding:6px 2px}
+  .sec{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--faint);margin:22px 6px 9px;font-weight:700}
+  .panel{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:4px 15px}
 
-  /* config modal */
-  .modal{position:fixed;inset:0;background:rgba(6,7,16,.78);display:none;align-items:center;justify-content:center;padding:20px;z-index:30;backdrop-filter:blur(4px)}
+  .item{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--bd-soft)}
+  .item:first-child{border-top:0}
+  .item .body{flex:1;min-width:0}
+  .item .t{font-size:14px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .m{font-size:12px;color:var(--dim);margin-top:2px}
+  .item .r{margin-left:auto;text-align:right;font-size:12px;color:var(--dim);white-space:nowrap;flex:0 0 auto}
+  a.lk{text-decoration:none;color:inherit;display:block}
+  a.lk:active{opacity:.7}
+  .enter{animation:enter .42s cubic-bezier(.22,1,.36,1)}
+  @keyframes enter{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+  .num{font-variant-numeric:tabular-nums;color:var(--faint)}
+
+  .failbanner{display:flex;align-items:center;gap:9px;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);
+    color:#ffd9df;border-radius:12px;padding:10px 13px;margin:11px 0;font-size:13px;font-weight:600}
+
+  .svc{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--bd-soft);font-size:14px}
+  .svc:first-child{border-top:0}
+  .svc .nm{font-weight:600}
+  .svc .meta{font-size:12px;color:var(--faint);margin-left:2px}
+  .svc .st{margin-left:auto}
+  .sdot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+  .s-ok{background:var(--ok)} .s-bad{background:var(--bad)} .s-idle{background:var(--idle)}
+
+  /* ---- sistem: mini grafikler ---- */
+  .sysgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  .scard{background:var(--panel);border:1px solid var(--bd);border-radius:15px;padding:12px 13px}
+  .scard h3{font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--faint);margin:0 0 6px;font-weight:700}
+  .sval{font-size:23px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums}
+  .sval .u{font-size:12px;color:var(--dim);font-weight:600}
+  .spark{width:100%;height:34px;display:block;margin-top:8px}
+  .gauge2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px}
+  .gcard{background:var(--panel);border:1px solid var(--bd);border-radius:15px;padding:12px 13px;display:flex;align-items:center;gap:12px}
+  .ring{position:relative;width:50px;height:50px;border-radius:50%;flex:0 0 auto;
+    background:conic-gradient(var(--c,var(--ok)) calc(var(--p,0)*1%),rgba(255,255,255,.08) 0);display:grid;place-items:center}
+  .ring::after{content:"";width:38px;height:38px;border-radius:50%;background:var(--panel)}
+  .ring span{position:absolute;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+  .gcard .lbl{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);font-weight:700}
+  .gcard .v2{font-size:15px;font-weight:700;margin-top:2px}
+
+  .empty{color:var(--faint);font-size:13px;padding:12px 2px}
+
+  /* config */
+  .modal{position:fixed;inset:0;background:rgba(6,7,14,.8);display:none;align-items:center;justify-content:center;padding:20px;z-index:40;backdrop-filter:blur(4px)}
   .modal.show{display:flex}
-  .sheet{background:#15172b;border:1px solid var(--card-bd);border-radius:20px;max-width:440px;width:100%;padding:22px}
+  .sheet{background:#15172e;border:1px solid var(--bd);border-radius:20px;max-width:440px;width:100%;padding:22px}
   .sheet h3{margin:0 0 4px;font-size:17px}
-  .sheet p{color:var(--dim);font-size:13px;margin:0 0 16px}
+  .sheet p{color:var(--dim);font-size:13px;margin:0 0 14px}
   label{display:block;font-size:12px;color:var(--dim);margin:12px 0 5px}
-  input{width:100%;background:#0d0f1f;border:1px solid var(--card-bd);border-radius:11px;color:var(--ink);
-    padding:11px 12px;font-size:14px;font-family:inherit}
+  input{width:100%;background:#0c0e1e;border:1px solid var(--bd);border-radius:11px;color:var(--ink);padding:12px;font-size:14px;font-family:inherit}
   input:focus{outline:none;border-color:#6f6cc0}
-  .btn{margin-top:18px;width:100%;border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;
-    color:#fff;background:linear-gradient(150deg,var(--navy),var(--mauve))}
+  .btn{margin-top:18px;width:100%;border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(150deg,var(--navy),var(--mauve))}
   .btn:active{opacity:.9}
-  .btn.ghost{background:none;border:1px solid var(--card-bd);color:var(--dim);margin-top:9px}
+  .btn.ghost{background:none;border:1px solid var(--bd);color:var(--dim);margin-top:9px}
   .err{color:var(--bad);font-size:12px;margin-top:10px;min-height:14px}
-  .hint{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
+  .hint{font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5}
   code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:5px;font-size:12px}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    .progress > i{width:100%;background:var(--run);opacity:.5}
+  }
+  @media (max-width:430px){ .sysgrid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -107,34 +167,24 @@
     </div>
     <button class="gear" id="gear" title="Ayarlar">⚙</button>
   </header>
-
-  <div class="freshbar">
-    <span class="dot" id="dot"></span>
-    <span id="fresh">—</span>
-    <span style="margin-left:auto" id="uptime"></span>
-  </div>
-
+  <div class="fresh"><span class="dot" id="dot"></span><span id="freshtxt">—</span><span style="margin-left:auto" id="uptime"></span></div>
   <main id="app"></main>
 </div>
 
-<!-- Config -->
 <div class="modal" id="modal">
   <div class="sheet">
     <h3>Bağlantı ayarları</h3>
-    <p>Veriler private repo'dan salt-okunur token ile çekilir. Token yalnız bu cihazın tarayıcısında saklanır (localStorage), hiçbir yere gönderilmez.</p>
+    <p>Veriler private repo'dan salt-okunur token ile çekilir. Token yalnız bu cihazın tarayıcısında saklanır, hiçbir sunucuya gönderilmez.</p>
     <label>GitHub fine-grained token (read-only)</label>
     <input id="f-token" type="password" placeholder="github_pat_…" autocomplete="off" />
-    <label>Status repo <span class="muted">(owner/repo — status.json buradan okunur)</span></label>
+    <label>Status repo <span class="num">(status.json + history.json)</span></label>
     <input id="f-statusrepo" placeholder="DNA-Software-Solutions/airmed-status" autocomplete="off" />
-    <label>Actions repo <span class="muted">(workflow run'lar için)</span></label>
+    <label>Actions repo <span class="num">(workflow / merge / PR)</span></label>
     <input id="f-actionsrepo" placeholder="DNA-Software-Solutions/airmed-hbys" autocomplete="off" />
     <div class="err" id="cfgerr"></div>
     <button class="btn" id="save">Kaydet & bağlan</button>
     <button class="btn ghost" id="forget">Token'ı sil (çıkış)</button>
-    <div class="hint">
-      Gerekli izinler (fine-grained PAT): <code>Contents: Read</code> (status repo) +
-      <code>Actions: Read</code> (actions repo). Başka yetki verme.
-    </div>
+    <div class="hint">İzinler (fine-grained PAT, salt-okuma): <code>Contents: Read</code> + <code>Actions: Read</code> + <code>Pull requests: Read</code>. Başka yetki verme.</div>
   </div>
 </div>
 
@@ -143,8 +193,7 @@ const LS="airmed-monitor.cfg";
 const $=s=>document.querySelector(s);
 const cfg=()=>{try{return JSON.parse(localStorage.getItem(LS))||{}}catch{return{}}};
 const setCfg=c=>localStorage.setItem(LS,JSON.stringify(c));
-
-let timer=null, lastTs=null;
+let timer=null,lastTs=null,seenMerge=new Set(),seenPr=new Set(),first=true;
 
 function openModal(){const c=cfg();$("#f-token").value=c.token||"";$("#f-statusrepo").value=c.statusRepo||"DNA-Software-Solutions/airmed-status";$("#f-actionsrepo").value=c.actionsRepo||"DNA-Software-Solutions/airmed-hbys";$("#cfgerr").textContent="";$("#modal").classList.add("show");}
 function closeModal(){$("#modal").classList.remove("show");}
@@ -154,8 +203,8 @@ $("#save").onclick=async()=>{
   const c={token:$("#f-token").value.trim(),statusRepo:$("#f-statusrepo").value.trim(),actionsRepo:$("#f-actionsrepo").value.trim()};
   if(!c.token||!c.statusRepo){$("#cfgerr").textContent="Token ve status repo zorunlu.";return;}
   $("#cfgerr").textContent="kontrol ediliyor…";
-  try{ await fetchStatus(c); }catch(e){ $("#cfgerr").textContent="Bağlanamadı: "+e.message; return; }
-  setCfg(c); closeModal(); start();
+  try{await fetchStatus(c);}catch(e){$("#cfgerr").textContent="Bağlanamadı: "+e.message;return;}
+  setCfg(c);closeModal();first=true;seenMerge.clear();seenPr.clear();start();
 };
 
 async function gh(url,c,raw){
@@ -167,131 +216,156 @@ async function gh(url,c,raw){
   if(!r.ok)throw new Error("HTTP "+r.status);
   return raw?r.text():r.json();
 }
-const fetchStatus=c=>gh(`https://api.github.com/repos/${c.statusRepo}/contents/status.json`,c,true).then(t=>JSON.parse(t));
-const fetchRuns=c=>gh(`https://api.github.com/repos/${c.actionsRepo}/actions/runs?per_page=8`,c,false);
+const fetchStatus =c=>gh(`https://api.github.com/repos/${c.statusRepo}/contents/status.json`,c,true).then(JSON.parse);
+const fetchHistory=c=>gh(`https://api.github.com/repos/${c.statusRepo}/contents/history.json`,c,true).then(JSON.parse).catch(()=>[]);
+const fetchRuns   =c=>gh(`https://api.github.com/repos/${c.actionsRepo}/actions/runs?per_page=30`,c,false).catch(()=>null);
+const fetchCommits=c=>gh(`https://api.github.com/repos/${c.actionsRepo}/commits?sha=main&per_page=8`,c,false).catch(()=>null);
+const fetchPRs    =c=>gh(`https://api.github.com/repos/${c.actionsRepo}/pulls?state=open&sort=updated&direction=desc&per_page=8`,c,false).catch(()=>null);
 
-// ---------- render helpers ----------
-const clamp=(n)=>Math.max(0,Math.min(100,Number(n)||0));
-function barColor(p){p=Number(p)||0;return p>=90?"var(--bad)":p>=70?"var(--warn)":"var(--ok)";}
-function tempColor(c){return c==null?"var(--idle)":c>=80?"var(--bad)":c>=65?"var(--warn)":"var(--ok)";}
-function ago(iso){if(!iso)return"—";const s=Math.round((Date.now()-new Date(iso))/1000);
-  if(s<60)return s+" sn önce";if(s<3600)return Math.round(s/60)+" dk önce";if(s<86400)return Math.round(s/3600)+" sa önce";return Math.round(s/86400)+" gün önce";}
-function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);
-  return d?`${d}g ${h}sa`:h?`${h}sa ${m}dk`:`${m}dk`;}
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clamp=n=>Math.max(0,Math.min(100,Number(n)||0));
+function ago(iso){if(!iso)return"—";let s=Math.round((Date.now()-new Date(iso))/1000);if(s<0)s=0;
+  if(s<60)return s+"sn";if(s<3600)return Math.round(s/60)+"dk";if(s<86400)return Math.round(s/3600)+"sa";return Math.round(s/86400)+"g";}
+function hms(iso){let s=Math.round((Date.now()-new Date(iso))/1000);if(s<0)s=0;
+  const m=Math.floor(s/60),ss=s%60,h=Math.floor(m/60);
+  return h?`${h}:${String(m%60).padStart(2,"0")}:${String(ss).padStart(2,"0")}`:`${m}:${String(ss).padStart(2,"0")}`;}
+function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);return d?`${d}g ${h}sa`:h?`${h}sa ${m}dk`:`${m}dk`;}
+const isDeploy=r=>/deploy/i.test((r.name||"")+" "+(r.path||""));
+function cpuColor(p){p=Number(p)||0;return p>=90?"var(--bad)":p>=70?"var(--warn)":"var(--ok)";}
+function tempColor(c){return c==null?"var(--idle)":c>=80?"var(--bad)":c>=65?"var(--warn)":"var(--ok)";}
 
-function gauge(lbl,val,unit,pct,extra){
-  return `<div class="card"><h2>${lbl}</h2>
-    <div class="metric"><span class="big">${val}<span class="unit"> ${unit}</span></span>${extra||""}</div>
-    <div class="bar"><i style="width:${clamp(pct)}%;background:${barColor(pct)}"></i></div></div>`;
-}
-function statusPill(c){
-  if(c.state!=="running")return `<span class="pill p-bad">${esc(c.state||"down")}</span>`;
-  if(c.healthy)return `<span class="pill p-ok">healthy</span>`;
-  if(/health/i.test(c.status||"")&&/starting/i.test(c.status||""))return `<span class="pill p-warn">starting</span>`;
-  return `<span class="pill p-ok">running</span>`;
-}
-function runPill(r){
-  if(r.status!=="completed")return `<span class="pill p-warn">${esc(r.status)}</span>`;
-  const c=r.conclusion;
-  if(c==="success")return `<span class="pill p-ok">başarılı</span>`;
-  if(c==="cancelled"||c==="skipped")return `<span class="pill p-idle">${esc(c)}</span>`;
-  return `<span class="pill p-bad">${esc(c||"hata")}</span>`;
+function sparkline(vals,max,color){
+  const w=120,h=34,n=vals.length;
+  if(n<2)return `<svg class="spark" viewBox="0 0 ${w} ${h}"><text x="0" y="22" fill="var(--faint)" font-size="10">veri toplanıyor…</text></svg>`;
+  const pts=vals.map((v,i)=>{const x=i/(n-1)*w;const y=h-2-(clamp((v??0)/max*100)/100)*(h-4);return [x,+y.toFixed(1)];});
+  const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1]).join(" ");
+  const area=`M0 ${h} L`+pts.map(p=>p[0].toFixed(1)+" "+p[1]).join(" L")+` L${w} ${h} Z`;
+  const last=pts[n-1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path d="${area}" fill="${color}" opacity=".13"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1]}" r="2.2" fill="${color}"/></svg>`;
 }
 
-function render(s,runs){
+function runItem(r,kind){
+  const dep=isDeploy(r)?`<span class="deploy">DEPLOY</span>`:"";
+  const meta=`<span class="b">${esc(r.head_branch||"")}</span><span>${esc((r.actor&&r.actor.login)||"")}</span><span>${esc(r.event||"")}</span>`;
+  if(kind==="run")
+    return `<div class="job run"><div class="acc"></div><div class="job-main">
+      <div class="job-name">${esc(r.name||r.display_title)}</div>
+      <div class="job-meta">${meta}</div>
+      <div class="progress"><i></i></div></div>
+      <div class="job-side">${dep||'<span class="pill p-run">koşuyor</span>'}
+        <span class="elapsed" data-start="${esc(r.run_started_at||r.created_at)}">${hms(r.run_started_at||r.created_at)}</span></div></div>`;
+  return `<div class="job queue"><div class="acc"></div><div class="job-main">
+      <div class="job-name">${esc(r.name||r.display_title)}</div>
+      <div class="job-meta">${meta}</div></div>
+      <div class="job-side"><span class="pill p-queue">kuyrukta</span>
+        <span class="elapsed" data-wait="1" data-start="${esc(r.created_at)}">${hms(r.created_at)} bekliyor</span></div></div>`;
+}
+
+function render(s,hist,runs,commits,prs){
   const sy=s.system||{};
-  $("#hostline").textContent=`${s.host||"ali-yeni"} · ${(sy.cpuCount||"?")} vCPU`;
-  $("#uptime").textContent=s.uptimeSec?("uptime "+dur(s.uptimeSec)):"";
+  $("#hostline").textContent=`${s.host||"ali-yeni"} · ${sy.cpuCount||"?"} vCPU · uptime ${dur(s.uptimeSec)}`;
+  lastTs=s.ts;
 
-  const statMap={};(s.stats||[]).forEach(x=>statMap[x.name]=x);
-  const batBadge=sy.batteryPct==null?"":
-    `<span class="pill ${sy.acOnline?'p-ok':(sy.batteryPct<20?'p-bad':'p-idle')}">${sy.acOnline?'⚡ şarjda':'batarya'} ${sy.batteryPct}%</span>`;
+  // workflow akışı — kuyruk önce (kullanıcı önceliği)
+  const wr=(runs&&runs.workflow_runs)||[];
+  const queued=wr.filter(r=>r.status==="queued"||r.status==="waiting"||r.status==="pending");
+  const running=wr.filter(r=>r.status==="in_progress");
+  let flow;
+  if(queued.length||running.length){
+    flow=running.map(r=>runItem(r,"run")).join("")+queued.map(r=>runItem(r,"queue")).join("");
+  }else{
+    flow=`<div class="calm"><span class="dot"></span>Kuyruk boş — şu an koşan iş yok.</div>`;
+  }
+  let html=`<div class="hero"><div class="hero-head"><h2>İŞ AKIŞI</h2>
+    <div class="chips"><span class="chip q">⏳ <b>${queued.length}</b> kuyrukta</span><span class="chip r">▶ <b>${running.length}</b> koşuyor</span></div></div>
+    ${flow}</div>`;
 
-  let html=`<div class="grid cards">
-    ${gauge("CPU",(sy.cpuPct??0),"%",sy.cpuPct,`<span class="muted">yük ${sy.load1??"—"}</span>`)}
-    ${gauge("RAM",(sy.memPct??0),"%",sy.memPct,`<span class="muted">${Math.round((sy.memUsedMb||0)/10.24)/100}/${Math.round((sy.memTotalMb||0)/102.4)/10} GB</span>`)}
-    ${gauge("Disk",(sy.diskPct??0),"%",sy.diskPct,`<span class="muted">${sy.diskUsedGb||0}/${sy.diskTotalGb||0} GB</span>`)}
-    <div class="card"><h2>Sıcaklık / Güç</h2>
-      <div class="metric"><span class="big" style="color:${tempColor(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC+"<span class='unit'>°C</span>"}</span>${batBadge}</div>
-      <div class="bar"><i style="width:${clamp((sy.tempMaxC||0)/100*100)}%;background:${tempColor(sy.tempMaxC)}"></i></div>
-      <div style="margin-top:9px">${(sy.temps||[]).map(t=>`<div class="kv"><span class="muted">${esc(t.label)}</span><span class="v">${t.c}°C</span></div>`).join("")||'<div class="empty">sensör yok</div>'}</div>
-    </div>
+  // son merge'ler (main commit'leri = squash merge)
+  html+=`<div class="sec">Son merge'ler</div><div class="panel">`;
+  if(commits&&commits.length){
+    html+=commits.map(c=>{const msg=(c.commit.message||"").split("\n")[0];
+      const isNew=!first&&!seenMerge.has(c.sha);seenMerge.add(c.sha);
+      return `<a class="lk" href="${esc(c.html_url)}" target="_blank" rel="noopener"><div class="item${isNew?" enter":""}">
+        <div class="body"><div class="t">${esc(msg)}</div>
+        <div class="m">${esc((c.author&&c.author.login)||(c.commit.author&&c.commit.author.name)||"")} · ${ago(c.commit.author&&c.commit.author.date)} önce</div></div>
+        <div class="r">${esc((c.sha||"").slice(0,7))}</div></div></a>`;}).join("");
+  }else html+=`<div class="empty">merge bilgisi alınamadı</div>`;
+  html+=`</div>`;
+
+  // açık PR'lar (sırada)
+  if(prs&&prs.length){
+    html+=`<div class="sec">Açık PR'lar — sırada</div><div class="panel">`+
+      prs.map(p=>{const isNew=!first&&!seenPr.has(p.number);seenPr.add(p.number);
+        return `<a class="lk" href="${esc(p.html_url)}" target="_blank" rel="noopener"><div class="item${isNew?" enter":""}">
+          <div class="body"><div class="t">${esc(p.title)}</div>
+          <div class="m">${esc((p.user&&p.user.login)||"")} · ${esc(p.head&&p.head.ref)} · ${ago(p.updated_at)} önce</div></div>
+          <div class="r">#${p.number}${p.draft?' <span class="pill p-idle" style="margin-left:4px">taslak</span>':""}</div></div></a>`;}).join("")+`</div>`;
+  }
+
+  // servisler
+  html+=`<div class="sec">Sunucu servisleri</div><div class="panel">`;
+  const failed=s.failedUnits||[];
+  if(failed.length) html+=`<div class="failbanner">⚠ ${failed.length} servis HATA durumunda: ${failed.map(esc).join(", ")}</div>`;
+  const svcRow=(nm,active,meta)=>{const ok=active==="active",bad=active==="failed";
+    return `<div class="svc"><span class="sdot ${bad?'s-bad':ok?'s-ok':'s-idle'}"></span><span class="nm">${esc(nm)}</span>
+      ${meta?`<span class="meta">${esc(meta)}</span>`:""}<span class="st"><span class="pill ${bad?'p-bad':ok?'p-ok':'p-idle'}">${esc(active)}</span></span></div>`;};
+  (s.hostServices||[]).forEach(h=>html+=svcRow(h.name,h.active,h.sub));
+  (s.runners||[]).forEach(r=>html+=svcRow(r.name,r.active,"runner"));
+  (s.containers||[]).forEach(c=>{const st=c.state!=="running"?"failed":"active";
+    html+=svcRow(c.name.replace(/^airmed-staging-/,"stg/"),st,c.healthy?"healthy":c.status);});
+  if(s.staging&&s.staging.health) html+=svcRow("api /health",(s.staging.health.status==="ok"?"active":"failed"),"v"+s.staging.health.version);
+  html+=`</div>`;
+
+  // sistem mini grafikler
+  const H=hist||[];
+  const cpuArr=H.map(x=>x.cpu),tArr=H.map(x=>x.temp),mArr=H.map(x=>x.mem);
+  html+=`<div class="sec">Sistem</div><div class="sysgrid">
+    <div class="scard"><h3>CPU</h3><div class="sval" style="color:${cpuColor(sy.cpuPct)}">${(sy.cpuPct??0)}<span class="u">%</span></div>${sparkline(cpuArr,100,"var(--ok)")}</div>
+    <div class="scard"><h3>Sıcaklık</h3><div class="sval" style="color:${tempColor(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${sparkline(tArr,100,"var(--warn)")}</div>
+    <div class="scard"><h3>RAM</h3><div class="sval">${(sy.memPct??0)}<span class="u">%</span></div>${sparkline(mArr,100,"var(--queue)")}</div>
   </div>`;
-
-  // staging health
-  const h=(s.staging||{}).health;
-  html+=`<div class="section-title">Staging</div><div class="card">
-    <div class="kv"><span class="muted">API</span><span>${h?`<span class="pill p-ok">${esc(h.status)}</span>`:`<span class="pill p-bad">erişilemiyor</span>`}</span></div>
-    ${h?`<div class="kv"><span class="muted">Sürüm</span><span class="v">v${esc(h.version)}</span></div>`:""}
+  const bat=sy.batteryPct,disk=sy.diskPct;
+  html+=`<div class="gauge2">
+    <div class="gcard"><div class="ring" style="--p:${clamp(disk)};--c:${cpuColor(disk)}"><span>${disk??"—"}%</span></div>
+      <div><div class="lbl">Disk</div><div class="v2">${sy.diskUsedGb||0}/${sy.diskTotalGb||0} GB</div></div></div>
+    <div class="gcard"><div class="ring" style="--p:${clamp(bat)};--c:${bat!=null&&bat<20?'var(--bad)':'var(--ok)'}"><span>${bat==null?"—":bat+"%"}</span></div>
+      <div><div class="lbl">Batarya</div><div class="v2">${sy.acOnline?"⚡ şarjda":esc(sy.batteryState||"")}</div></div></div>
   </div>`;
-
-  // containers
-  html+=`<div class="section-title">Container'lar (airmed-staging)</div><div class="card">`;
-  if((s.containers||[]).length){
-    html+=s.containers.map(c=>{const st=statMap[c.name]||{};
-      return `<div class="row"><div><div class="name">${esc(c.name.replace(/^airmed-staging-/,""))}</div>
-        <div class="meta">${esc(c.status||"")}${st.cpu?` · cpu ${esc(st.cpu)} · ram ${esc(st.memPct)}`:""}</div></div>
-        <div class="right">${statusPill(c)}</div></div>`;}).join("");
-  }else html+=`<div class="empty">container bulunamadı</div>`;
-  html+=`</div>`;
-
-  // runners (status.json — yerel servis durumu)
-  html+=`<div class="section-title">Runner servisleri</div><div class="card">`;
-  if((s.runners||[]).length){
-    html+=s.runners.map(r=>`<div class="row"><div class="name">${esc(r.name)}</div>
-      <div class="right">${r.active==="active"?'<span class="pill p-ok">active</span>':`<span class="pill p-bad">${esc(r.active)}</span>`}</div></div>`).join("");
-  }else html+=`<div class="empty">runner servisi yok</div>`;
-  html+=`</div>`;
-
-  // workflow runs (live GitHub API)
-  html+=`<div class="section-title">Son workflow run'lar</div><div class="card">`;
-  if(runs&&runs.workflow_runs&&runs.workflow_runs.length){
-    html+=runs.workflow_runs.map(r=>`<a class="run" href="${esc(r.html_url)}" target="_blank" rel="noopener">
-      <div class="row"><div><div class="name">${esc(r.name||r.display_title)}</div>
-        <div class="meta">${esc(r.head_branch)} · ${esc((r.actor&&r.actor.login)||"")} · ${ago(r.created_at)}</div></div>
-        <div class="right">${runPill(r)}</div></div></a>`).join("");
-  }else html+=`<div class="empty">workflow run bilgisi alınamadı</div>`;
-  html+=`</div>`;
 
   $("#app").innerHTML=html;
-  lastTs=s.ts;
+  first=false;
   paintFresh();
 }
 
+function tickElapsed(){document.querySelectorAll(".elapsed[data-start]").forEach(el=>{
+  el.textContent=el.dataset.wait?(hms(el.dataset.start)+" bekliyor"):hms(el.dataset.start);});}
+
 function paintFresh(){
-  if(!lastTs){$("#fresh").textContent="—";return;}
-  const sec=Math.round((Date.now()-new Date(lastTs))/1000);
-  const stale=sec>90;
+  if(!lastTs){$("#freshtxt").textContent="—";return;}
+  const sec=Math.round((Date.now()-new Date(lastTs))/1000);const stale=sec>90;
   $("#dot").className="dot "+(stale?"stale":"live");
-  $("#fresh").textContent=(stale?"⚠ veri bayat — ":"")+"toplandı "+ago(lastTs);
-  if(stale)$("#fresh").style.color="var(--bad)";else $("#fresh").style.color="var(--dim)";
+  $("#freshtxt").textContent=(stale?"⚠ veri bayat · ":"")+"toplandı "+ago(lastTs)+" önce";
+  $("#freshtxt").style.color=stale?"var(--bad)":"var(--dim)";
 }
 
 async function tick(){
   const c=cfg();
   try{
-    const [s,runs]=await Promise.all([fetchStatus(c),fetchRuns(c).catch(()=>null)]);
-    render(s,runs);
+    const [s,hist,runs,commits,prs]=await Promise.all([fetchStatus(c),fetchHistory(c),fetchRuns(c),fetchCommits(c),fetchPRs(c)]);
+    render(s,hist,runs,commits,prs);
   }catch(e){
-    $("#hostline").textContent="hata: "+e.message;
-    $("#dot").className="dot stale";
+    $("#hostline").textContent="hata: "+e.message;$("#dot").className="dot stale";
     if(/token reddedildi/.test(e.message))openModal();
   }
 }
+function start(){if(timer)clearInterval(timer);tick();timer=setInterval(tick,15000);}
+setInterval(tickElapsed,1000);
+setInterval(paintFresh,5000);
 
-function start(){
-  if(timer)clearInterval(timer);
-  tick();
-  timer=setInterval(tick,20000);
-  setInterval(paintFresh,5000);
-}
-
-(function init(){
-  const c=cfg();
-  if(!c.token||!c.statusRepo){openModal();}
-  else start();
-})();
+(function(){const c=cfg();if(!c.token||!c.statusRepo)openModal();else start();})();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick();});
 </script>
 </body>
