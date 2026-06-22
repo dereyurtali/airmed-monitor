@@ -213,12 +213,12 @@
     <p>Veriler private repo'dan salt-okunur token ile çekilir. Token yalnız bu cihazın tarayıcısında saklanır, hiçbir sunucuya gönderilmez.</p>
     <label>GitHub fine-grained token (read-only)</label>
     <input id="f-token" type="password" placeholder="github_pat_…" autocomplete="off" />
-    <label>Status repo</label>
+    <label>Durum deposu</label>
     <input id="f-statusrepo" placeholder="DNA-Software-Solutions/airmed-status" autocomplete="off" />
-    <label>Actions repo</label>
+    <label>Actions deposu</label>
     <input id="f-actionsrepo" placeholder="DNA-Software-Solutions/airmed-hbys" autocomplete="off" />
     <div class="err" id="cfgerr"></div>
-    <button class="btn" id="save">Kaydet &amp; bağlan</button>
+    <button class="btn" id="save">Kaydet ve bağlan</button>
     <button class="btn ghost" id="forget">Token'ı sil</button>
     <div class="hint">İzinler (salt-okuma): <code>Contents</code> + <code>Actions</code> + <code>Pull requests</code> = Read. Başka yetki verme.</div>
   </div>
@@ -271,11 +271,11 @@ const fetchJobs   =(c,id)=>gh(`https://api.github.com/repos/${c.actionsRepo}/act
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const clamp=n=>Math.max(0,Math.min(100,Number(n)||0));
 function ago(iso){if(!iso)return"—";let s=Math.round((Date.now()-new Date(iso))/1000);if(s<0)s=0;
-  if(s<60)return s+"sn";if(s<3600)return Math.round(s/60)+"dk";if(s<86400)return Math.round(s/3600)+"sa";return Math.round(s/86400)+"g";}
+  if(s<60)return s+" sn önce";if(s<3600)return Math.round(s/60)+" dk önce";if(s<86400)return Math.round(s/3600)+" sa önce";return Math.round(s/86400)+" gün önce";}
 function hms(iso){let s=Math.round((Date.now()-new Date(iso))/1000);if(s<0)s=0;
   const m=Math.floor(s/60),ss=s%60,h=Math.floor(m/60);
   return h?`${h}:${String(m%60).padStart(2,"0")}:${String(ss).padStart(2,"0")}`:`${m}:${String(ss).padStart(2,"0")}`;}
-function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);return d?`${d}g ${h}sa`:h?`${h}sa ${m}dk`:`${m}dk`;}
+function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);return d?`${d} g ${h} sa`:h?`${h} sa ${m} dk`:`${m} dk`;}
 const isDeploy=r=>/deploy/i.test((r.name||"")+" "+(r.path||""));
 // renk = anlam: yalnız eşik aşılınca tonlanır (aksi halde nötr)
 function lvl(p,warn,crit){p=Number(p);return p>=crit?"var(--brick)":p>=warn?"var(--sand)":"var(--n9)";}
@@ -315,11 +315,11 @@ function jobRow(j){
   return `<div class="job ${st}"><span class="con"></span><span class="sq"></span><span class="jn">${esc(j.name)}</span>${tail}</div>`;}
 
 function runCard(r,kind,i){
-  const pct=runPct(r);const dep=isDeploy(r)?`<span class="dep">DEPLOY</span>`:"";
+  const pct=runPct(r);const dep=isDeploy(r)?`<span class="dep">DAĞITIM</span>`:"";
   const sub=`<span class="br">${esc(r.head_branch||"")}</span> · ${esc((r.actor&&r.actor.login)||"")} · ${esc(r.event||"")}`;
   const tag=kind==="r"
     ? `<span class="tag mono"><b>${pct}</b>% · <span data-start="${esc(r.run_started_at||r.created_at)}">${hms(r.run_started_at||r.created_at)}</span></span>`
-    : `<span class="tag mono">QUEUED · <span data-wait="1" data-start="${esc(r.created_at)}">${hms(r.created_at)}</span></span>`;
+    : `<span class="tag mono">KUYRUKTA · <span data-wait="1" data-start="${esc(r.created_at)}">${hms(r.created_at)}</span></span>`;
   const jobs=(r.jobs&&r.jobs.length)?`<div class="jobs">${r.jobs.map(jobRow).join("")}</div>`:"";
   return `<div class="run ${kind}">
     <div class="run-h"><span class="idx mono">${String(i+1).padStart(2,"0")}</span>
@@ -342,31 +342,31 @@ function render(s,hist,runs,commits,prs){
   if(running.length){body+=grp("ÇALIŞAN",running.length)+running.map(r=>runCard(r,"r",idx++)).join("");}
   if(queued.length){body+=grp("KUYRUK",queued.length)+queued.map(r=>runCard(r,"q",idx++)).join("");}
   if(body)flow=`<div class="runs">${body}</div>`;
-  else flow=`<div class="idle"><span class="led on"></span>kuyruk boş · çalışan iş yok</div>`;
+  else flow=`<div class="idle"><span class="led on"></span>kuyruk boş · çalışan yok</div>`;
   $("#reg-flow").innerHTML=`<div class="lab">İŞ AKIŞI<span class="rule"></span>
-    <span class="ct">${running.length} RUN</span><span class="ct">${queued.length} Q</span></div>${flow}`;
+    <span class="ct">${running.length} çalışan</span><span class="ct">${queued.length} kuyrukta</span></div>${flow}`;
 
   // ---- side: instrument cluster + meters + status board ----
   const H=hist||[];
   const cs=scope(H.map(x=>x.cpu),cpuC(sy.cpuPct)),ts=scope(H.map(x=>x.temp),tmpC(sy.tempMaxC)),ms=scope(H.map(x=>x.mem),memC(sy.memPct));
   const bat=sy.batteryPct,disk=sy.diskPct;
-  let side=`<div class="blk"><div class="lab">VİTALLER<span class="rule"></span></div>
+  let side=`<div class="blk"><div class="lab">SİSTEM DURUMU<span class="rule"></span></div>
     <div class="cluster">
       <div class="gel"><div class="gl">${IC.cpu} CPU</div><div class="gv" style="color:${cpuC(sy.cpuPct)}">${sy.cpuPct??0}<span class="u">%</span></div>${cs.svg}${cs.rg}</div>
-      <div class="gel"><div class="gl">${IC.therm} ISI</div><div class="gv" style="color:${tmpC(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${ts.svg}${ts.rg}</div>
+      <div class="gel"><div class="gl">${IC.therm} SICAKLIK</div><div class="gv" style="color:${tmpC(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${ts.svg}${ts.rg}</div>
       <div class="gel"><div class="gl">${IC.ram} RAM</div><div class="gv" style="color:${memC(sy.memPct)}">${sy.memPct??0}<span class="u">%</span></div>${ms.svg}${ms.rg}</div>
     </div>
     <div class="meters">
-      ${lmeter(disk,"DISK",(sy.diskUsedGb||0)+"/"+(sy.diskTotalGb||0)+"G")}
-      ${lmeter(bat==null?0:bat,"PWR",(bat==null?"—":bat+"%")+(sy.acOnline?" AC":""))}
+      ${lmeter(disk,"DİSK",(sy.diskUsedGb||0)+"/"+(sy.diskTotalGb||0)+"G")}
+      ${lmeter(bat==null?0:bat,"GÜÇ",(bat==null?"—":bat+"%")+(sy.acOnline?" prizde":""))}
     </div></div>`;
 
   const failed=s.failedUnits||[];
-  let svc=`<div class="blk"><div class="lab">SERVİSLER<span class="rule"></span><span class="ct ${failed.length?'warn':'ok'}">${failed.length?failed.length+" FAULT":"NOMINAL"}</span></div><div class="board">`;
+  let svc=`<div class="blk"><div class="lab">SERVİSLER<span class="rule"></span><span class="ct ${failed.length?'warn':'ok'}">${failed.length?failed.length+" ARIZA":"NORMAL"}</span></div><div class="board">`;
   if(failed.length)svc+=`<div class="fault">${IC.alert} ${failed.map(esc).join("  ")}</div>`;
   const row=(nm,active,meta)=>{const ok=active==="active",bad=active==="failed";
     return `<div class="srow ${bad?'bad':ok?'ok':''}"><span class="sq ${bad?'bad':ok?'ok':''}"></span>
-      <span class="sn">${esc(nm)}</span><span class="sm">${esc(meta||"")}</span><span class="ss">${ok?'up':bad?'fault':esc(active)}</span></div>`;};
+      <span class="sn">${esc(nm)}</span><span class="sm">${esc(meta||"")}</span><span class="ss">${ok?'aktif':bad?'arıza':esc(active)}</span></div>`;};
   (s.hostServices||[]).forEach(h=>svc+=row(h.name,h.active,h.sub));
   (s.runners||[]).forEach(r=>svc+=row(r.name,r.active,"runner"));
   (s.containers||[]).forEach(c=>svc+=row(c.name.replace(/^airmed-staging-/,"stg/"),c.state!=="running"?"failed":"active",c.healthy?"healthy":c.status));
@@ -375,7 +375,7 @@ function render(s,hist,runs,commits,prs){
   $("#reg-side").innerHTML=side+svc;
 
   // ---- bottom: merge log + PR queue ----
-  let mg=`<div class="blk"><div class="lab">${IC.merge} MERGE LOG<span class="rule"></span></div><div class="log">`;
+  let mg=`<div class="blk"><div class="lab">${IC.merge} MERGE KAYDI<span class="rule"></span></div><div class="log">`;
   if(commits&&commits.length){
     mg+=commits.map(c=>{const msg=(c.commit.message||"").split("\n")[0];const isNew=!first&&!seenMerge.has(c.sha);seenMerge.add(c.sha);
       return `<a class="lk" href="${esc(c.html_url)}" target="_blank" rel="noopener"><div class="lrow${isNew?" enter":""}">
@@ -384,7 +384,7 @@ function render(s,hist,runs,commits,prs){
   }else mg+=`<div class="empty">veri yok</div>`;
   mg+=`</div></div>`;
 
-  let pr=`<div class="blk"><div class="lab">${IC.pr} AÇIK PR<span class="rule"></span><span class="ct">${prs?prs.length:0}</span></div><div class="log">`;
+  let pr=`<div class="blk"><div class="lab">${IC.pr} AÇIK PR'LAR<span class="rule"></span><span class="ct">${prs?prs.length:0}</span></div><div class="log">`;
   if(prs&&prs.length){
     pr+=prs.map(p=>{const isNew=!first&&!seenPr.has(p.number);seenPr.add(p.number);
       return `<a class="lk" href="${esc(p.html_url)}" target="_blank" rel="noopener"><div class="lrow${isNew?" enter":""}">
@@ -402,7 +402,7 @@ function paintFresh(){
   if(!lastTs){$("#freshtxt").textContent="—";return;}
   const stale=Math.round((Date.now()-new Date(lastTs))/1000)>90;
   $("#led").className="led "+(stale?"bad":"on");
-  $("#freshtxt").textContent=(stale?"STALE ":"sync ")+ago(lastTs);
+  $("#freshtxt").textContent=(stale?"ESKİ VERİ · ":"GÜNCEL · ")+ago(lastTs);
   $("#freshtxt").style.color=stale?"var(--brick)":"var(--faint)";
 }
 
