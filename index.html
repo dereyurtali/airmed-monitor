@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="noindex, nofollow" />
+<title>ali-yeni · Staging Monitör</title>
+<style>
+  :root{
+    --navy:#26296b; --mid:#34306e; --mauve:#5a3a56;
+    --bg:#0d0e1a; --card:rgba(255,255,255,.055); --card-bd:rgba(255,255,255,.10);
+    --ink:#eef0fb; --dim:#9aa0c4; --faint:#6b6f93;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --idle:#6b7280;
+    --r:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    color:var(--ink); background:var(--bg);
+    background-image:radial-gradient(1200px 600px at 15% -10%, #2a2c70 0%, transparent 55%),
+                     radial-gradient(1000px 600px at 110% 10%, #5a3a56 0%, transparent 50%),
+                     linear-gradient(160deg,#101126,#0b0c16);
+    min-height:100vh; padding:env(safe-area-inset-top) 14px 40px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  header{display:flex;align-items:center;gap:12px;padding:18px 4px 12px}
+  .logo{width:38px;height:38px;border-radius:11px;flex:0 0 auto;
+    background:linear-gradient(150deg,var(--navy),var(--mauve));
+    display:grid;place-items:center;font-weight:800;letter-spacing:.5px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--dim);margin-top:1px}
+  .gear{margin-left:auto;background:var(--card);border:1px solid var(--card-bd);color:var(--dim);
+    width:38px;height:38px;border-radius:11px;font-size:17px;cursor:pointer}
+  .gear:active{transform:scale(.94)}
+
+  .freshbar{display:flex;align-items:center;gap:10px;margin:4px 4px 16px;font-size:13px;color:var(--dim)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--idle);box-shadow:0 0 0 0 rgba(52,211,153,.5)}
+  .dot.live{background:var(--ok);animation:pulse 2s infinite}
+  .dot.stale{background:var(--bad)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.45)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+  .grid{display:grid;gap:12px}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .card{background:var(--card);border:1px solid var(--card-bd);border-radius:var(--r);
+    padding:14px 15px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .card h2{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
+
+  .metric{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .metric .lbl{font-size:13px;color:var(--dim)}
+  .big{font-size:26px;font-weight:750;line-height:1}
+  .unit{font-size:13px;color:var(--dim);font-weight:500}
+  .bar{height:7px;border-radius:6px;background:rgba(255,255,255,.09);margin-top:10px;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:6px;transition:width .5s ease,background .3s}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);font-size:13px}
+  .kv:first-of-type{border-top:0}
+  .kv .v{color:var(--ink);font-weight:600}
+  .muted{color:var(--dim)}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:999px;letter-spacing:.3px}
+  .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .p-ok{color:var(--ok);background:rgba(52,211,153,.12)}
+  .p-bad{color:var(--bad);background:rgba(248,113,113,.13)}
+  .p-warn{color:var(--warn);background:rgba(251,191,36,.13)}
+  .p-idle{color:var(--idle);background:rgba(107,114,128,.15)}
+
+  .row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid rgba(255,255,255,.06)}
+  .row:first-child{border-top:0}
+  .row .name{font-weight:600;font-size:14px}
+  .row .meta{font-size:12px;color:var(--dim);margin-top:2px}
+  .row .right{margin-left:auto;text-align:right;font-size:12px;color:var(--dim);white-space:nowrap}
+  a.run{text-decoration:none;color:inherit;display:block}
+
+  .section-title{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);margin:22px 6px 10px}
+  .empty{color:var(--faint);font-size:13px;padding:6px 2px}
+
+  /* config modal */
+  .modal{position:fixed;inset:0;background:rgba(6,7,16,.78);display:none;align-items:center;justify-content:center;padding:20px;z-index:30;backdrop-filter:blur(4px)}
+  .modal.show{display:flex}
+  .sheet{background:#15172b;border:1px solid var(--card-bd);border-radius:20px;max-width:440px;width:100%;padding:22px}
+  .sheet h3{margin:0 0 4px;font-size:17px}
+  .sheet p{color:var(--dim);font-size:13px;margin:0 0 16px}
+  label{display:block;font-size:12px;color:var(--dim);margin:12px 0 5px}
+  input{width:100%;background:#0d0f1f;border:1px solid var(--card-bd);border-radius:11px;color:var(--ink);
+    padding:11px 12px;font-size:14px;font-family:inherit}
+  input:focus{outline:none;border-color:#6f6cc0}
+  .btn{margin-top:18px;width:100%;border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;
+    color:#fff;background:linear-gradient(150deg,var(--navy),var(--mauve))}
+  .btn:active{opacity:.9}
+  .btn.ghost{background:none;border:1px solid var(--card-bd);color:var(--dim);margin-top:9px}
+  .err{color:var(--bad);font-size:12px;margin-top:10px;min-height:14px}
+  .hint{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
+  code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">A</div>
+    <div>
+      <h1>Staging Monitör</h1>
+      <div class="sub" id="hostline">ali-yeni · bağlanıyor…</div>
+    </div>
+    <button class="gear" id="gear" title="Ayarlar">⚙</button>
+  </header>
+
+  <div class="freshbar">
+    <span class="dot" id="dot"></span>
+    <span id="fresh">—</span>
+    <span style="margin-left:auto" id="uptime"></span>
+  </div>
+
+  <main id="app"></main>
+</div>
+
+<!-- Config -->
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h3>Bağlantı ayarları</h3>
+    <p>Veriler private repo'dan salt-okunur token ile çekilir. Token yalnız bu cihazın tarayıcısında saklanır (localStorage), hiçbir yere gönderilmez.</p>
+    <label>GitHub fine-grained token (read-only)</label>
+    <input id="f-token" type="password" placeholder="github_pat_…" autocomplete="off" />
+    <label>Status repo <span class="muted">(owner/repo — status.json buradan okunur)</span></label>
+    <input id="f-statusrepo" placeholder="DNA-Software-Solutions/airmed-status" autocomplete="off" />
+    <label>Actions repo <span class="muted">(workflow run'lar için)</span></label>
+    <input id="f-actionsrepo" placeholder="DNA-Software-Solutions/airmed-hbys" autocomplete="off" />
+    <div class="err" id="cfgerr"></div>
+    <button class="btn" id="save">Kaydet & bağlan</button>
+    <button class="btn ghost" id="forget">Token'ı sil (çıkış)</button>
+    <div class="hint">
+      Gerekli izinler (fine-grained PAT): <code>Contents: Read</code> (status repo) +
+      <code>Actions: Read</code> (actions repo). Başka yetki verme.
+    </div>
+  </div>
+</div>
+
+<script>
+const LS="airmed-monitor.cfg";
+const $=s=>document.querySelector(s);
+const cfg=()=>{try{return JSON.parse(localStorage.getItem(LS))||{}}catch{return{}}};
+const setCfg=c=>localStorage.setItem(LS,JSON.stringify(c));
+
+let timer=null, lastTs=null;
+
+function openModal(){const c=cfg();$("#f-token").value=c.token||"";$("#f-statusrepo").value=c.statusRepo||"DNA-Software-Solutions/airmed-status";$("#f-actionsrepo").value=c.actionsRepo||"DNA-Software-Solutions/airmed-hbys";$("#cfgerr").textContent="";$("#modal").classList.add("show");}
+function closeModal(){$("#modal").classList.remove("show");}
+$("#gear").onclick=openModal;
+$("#forget").onclick=()=>{localStorage.removeItem(LS);location.reload();};
+$("#save").onclick=async()=>{
+  const c={token:$("#f-token").value.trim(),statusRepo:$("#f-statusrepo").value.trim(),actionsRepo:$("#f-actionsrepo").value.trim()};
+  if(!c.token||!c.statusRepo){$("#cfgerr").textContent="Token ve status repo zorunlu.";return;}
+  $("#cfgerr").textContent="kontrol ediliyor…";
+  try{ await fetchStatus(c); }catch(e){ $("#cfgerr").textContent="Bağlanamadı: "+e.message; return; }
+  setCfg(c); closeModal(); start();
+};
+
+async function gh(url,c,raw){
+  const h={Authorization:"Bearer "+c.token,"X-GitHub-Api-Version":"2022-11-28"};
+  h.Accept=raw?"application/vnd.github.raw":"application/vnd.github+json";
+  const r=await fetch(url,{headers:h,cache:"no-store"});
+  if(r.status===401||r.status===403)throw new Error("token reddedildi ("+r.status+")");
+  if(r.status===404)throw new Error("repo/dosya yok (404)");
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return raw?r.text():r.json();
+}
+const fetchStatus=c=>gh(`https://api.github.com/repos/${c.statusRepo}/contents/status.json`,c,true).then(t=>JSON.parse(t));
+const fetchRuns=c=>gh(`https://api.github.com/repos/${c.actionsRepo}/actions/runs?per_page=8`,c,false);
+
+// ---------- render helpers ----------
+const clamp=(n)=>Math.max(0,Math.min(100,Number(n)||0));
+function barColor(p){p=Number(p)||0;return p>=90?"var(--bad)":p>=70?"var(--warn)":"var(--ok)";}
+function tempColor(c){return c==null?"var(--idle)":c>=80?"var(--bad)":c>=65?"var(--warn)":"var(--ok)";}
+function ago(iso){if(!iso)return"—";const s=Math.round((Date.now()-new Date(iso))/1000);
+  if(s<60)return s+" sn önce";if(s<3600)return Math.round(s/60)+" dk önce";if(s<86400)return Math.round(s/3600)+" sa önce";return Math.round(s/86400)+" gün önce";}
+function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);
+  return d?`${d}g ${h}sa`:h?`${h}sa ${m}dk`:`${m}dk`;}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function gauge(lbl,val,unit,pct,extra){
+  return `<div class="card"><h2>${lbl}</h2>
+    <div class="metric"><span class="big">${val}<span class="unit"> ${unit}</span></span>${extra||""}</div>
+    <div class="bar"><i style="width:${clamp(pct)}%;background:${barColor(pct)}"></i></div></div>`;
+}
+function statusPill(c){
+  if(c.state!=="running")return `<span class="pill p-bad">${esc(c.state||"down")}</span>`;
+  if(c.healthy)return `<span class="pill p-ok">healthy</span>`;
+  if(/health/i.test(c.status||"")&&/starting/i.test(c.status||""))return `<span class="pill p-warn">starting</span>`;
+  return `<span class="pill p-ok">running</span>`;
+}
+function runPill(r){
+  if(r.status!=="completed")return `<span class="pill p-warn">${esc(r.status)}</span>`;
+  const c=r.conclusion;
+  if(c==="success")return `<span class="pill p-ok">başarılı</span>`;
+  if(c==="cancelled"||c==="skipped")return `<span class="pill p-idle">${esc(c)}</span>`;
+  return `<span class="pill p-bad">${esc(c||"hata")}</span>`;
+}
+
+function render(s,runs){
+  const sy=s.system||{};
+  $("#hostline").textContent=`${s.host||"ali-yeni"} · ${(sy.cpuCount||"?")} vCPU`;
+  $("#uptime").textContent=s.uptimeSec?("uptime "+dur(s.uptimeSec)):"";
+
+  const statMap={};(s.stats||[]).forEach(x=>statMap[x.name]=x);
+  const batBadge=sy.batteryPct==null?"":
+    `<span class="pill ${sy.acOnline?'p-ok':(sy.batteryPct<20?'p-bad':'p-idle')}">${sy.acOnline?'⚡ şarjda':'batarya'} ${sy.batteryPct}%</span>`;
+
+  let html=`<div class="grid cards">
+    ${gauge("CPU",(sy.cpuPct??0),"%",sy.cpuPct,`<span class="muted">yük ${sy.load1??"—"}</span>`)}
+    ${gauge("RAM",(sy.memPct??0),"%",sy.memPct,`<span class="muted">${Math.round((sy.memUsedMb||0)/10.24)/100}/${Math.round((sy.memTotalMb||0)/102.4)/10} GB</span>`)}
+    ${gauge("Disk",(sy.diskPct??0),"%",sy.diskPct,`<span class="muted">${sy.diskUsedGb||0}/${sy.diskTotalGb||0} GB</span>`)}
+    <div class="card"><h2>Sıcaklık / Güç</h2>
+      <div class="metric"><span class="big" style="color:${tempColor(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC+"<span class='unit'>°C</span>"}</span>${batBadge}</div>
+      <div class="bar"><i style="width:${clamp((sy.tempMaxC||0)/100*100)}%;background:${tempColor(sy.tempMaxC)}"></i></div>
+      <div style="margin-top:9px">${(sy.temps||[]).map(t=>`<div class="kv"><span class="muted">${esc(t.label)}</span><span class="v">${t.c}°C</span></div>`).join("")||'<div class="empty">sensör yok</div>'}</div>
+    </div>
+  </div>`;
+
+  // staging health
+  const h=(s.staging||{}).health;
+  html+=`<div class="section-title">Staging</div><div class="card">
+    <div class="kv"><span class="muted">API</span><span>${h?`<span class="pill p-ok">${esc(h.status)}</span>`:`<span class="pill p-bad">erişilemiyor</span>`}</span></div>
+    ${h?`<div class="kv"><span class="muted">Sürüm</span><span class="v">v${esc(h.version)}</span></div>`:""}
+  </div>`;
+
+  // containers
+  html+=`<div class="section-title">Container'lar (airmed-staging)</div><div class="card">`;
+  if((s.containers||[]).length){
+    html+=s.containers.map(c=>{const st=statMap[c.name]||{};
+      return `<div class="row"><div><div class="name">${esc(c.name.replace(/^airmed-staging-/,""))}</div>
+        <div class="meta">${esc(c.status||"")}${st.cpu?` · cpu ${esc(st.cpu)} · ram ${esc(st.memPct)}`:""}</div></div>
+        <div class="right">${statusPill(c)}</div></div>`;}).join("");
+  }else html+=`<div class="empty">container bulunamadı</div>`;
+  html+=`</div>`;
+
+  // runners (status.json — yerel servis durumu)
+  html+=`<div class="section-title">Runner servisleri</div><div class="card">`;
+  if((s.runners||[]).length){
+    html+=s.runners.map(r=>`<div class="row"><div class="name">${esc(r.name)}</div>
+      <div class="right">${r.active==="active"?'<span class="pill p-ok">active</span>':`<span class="pill p-bad">${esc(r.active)}</span>`}</div></div>`).join("");
+  }else html+=`<div class="empty">runner servisi yok</div>`;
+  html+=`</div>`;
+
+  // workflow runs (live GitHub API)
+  html+=`<div class="section-title">Son workflow run'lar</div><div class="card">`;
+  if(runs&&runs.workflow_runs&&runs.workflow_runs.length){
+    html+=runs.workflow_runs.map(r=>`<a class="run" href="${esc(r.html_url)}" target="_blank" rel="noopener">
+      <div class="row"><div><div class="name">${esc(r.name||r.display_title)}</div>
+        <div class="meta">${esc(r.head_branch)} · ${esc((r.actor&&r.actor.login)||"")} · ${ago(r.created_at)}</div></div>
+        <div class="right">${runPill(r)}</div></div></a>`).join("");
+  }else html+=`<div class="empty">workflow run bilgisi alınamadı</div>`;
+  html+=`</div>`;
+
+  $("#app").innerHTML=html;
+  lastTs=s.ts;
+  paintFresh();
+}
+
+function paintFresh(){
+  if(!lastTs){$("#fresh").textContent="—";return;}
+  const sec=Math.round((Date.now()-new Date(lastTs))/1000);
+  const stale=sec>90;
+  $("#dot").className="dot "+(stale?"stale":"live");
+  $("#fresh").textContent=(stale?"⚠ veri bayat — ":"")+"toplandı "+ago(lastTs);
+  if(stale)$("#fresh").style.color="var(--bad)";else $("#fresh").style.color="var(--dim)";
+}
+
+async function tick(){
+  const c=cfg();
+  try{
+    const [s,runs]=await Promise.all([fetchStatus(c),fetchRuns(c).catch(()=>null)]);
+    render(s,runs);
+  }catch(e){
+    $("#hostline").textContent="hata: "+e.message;
+    $("#dot").className="dot stale";
+    if(/token reddedildi/.test(e.message))openModal();
+  }
+}
+
+function start(){
+  if(timer)clearInterval(timer);
+  tick();
+  timer=setInterval(tick,20000);
+  setInterval(paintFresh,5000);
+}
+
+(function init(){
+  const c=cfg();
+  if(!c.token||!c.statusRepo){openModal();}
+  else start();
+})();
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick();});
+</script>
+</body>
+</html>
