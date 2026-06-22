@@ -410,8 +410,11 @@ async function tick(){
   const c=cfg();
   try{
     const [s,hist,runs,commits,prs]=await Promise.all([fetchStatus(c),fetchHistory(c),fetchRuns(c),fetchCommits(c),fetchPRs(c)]);
+    // job/step detayını ÖNCE koşan run'lar için çek (gerçek % onlarda gösterilir),
+    // sonra kuyruktakiler — yoksa eski bir koşan run cap dışında kalıp %0'a düşer.
     const wr=(runs&&runs.workflow_runs)||[];
-    const active=wr.filter(r=>["in_progress","queued","waiting","pending","requested"].includes(r.status)).slice(0,6);
+    const isQ=r=>["queued","waiting","pending","requested"].includes(r.status);
+    const active=[...wr.filter(r=>r.status==="in_progress"),...wr.filter(isQ)].slice(0,10);
     await Promise.all(active.map(r=>fetchJobs(c,r.id).then(j=>r.jobs=j)));
     render(s,hist,runs,commits,prs);
   }catch(e){
