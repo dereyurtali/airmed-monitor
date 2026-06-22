@@ -15,7 +15,7 @@
      Palet design-for-ai palette.mjs (seed h38, muted, analogous) — warm grafit + tek kil aksan,
      near-monokrom; renk = anlam (eşik aşılınca). Tip: Space Grotesk (etiket) + IBM Plex Mono (veri). */
   :root{
-    --n1:#131212; --n2:#1a1919; --n3:#242121; --n4:#2d2928; --n5:#36312f; --n6:#413a38;
+    --n1:#1c1a18; --n2:#252220; --n3:#2f2b29; --n4:#383230; --n5:#403a37; --n6:#4a423f;
     --n7:#4f4744; --n8:#685e5a; --n9:#a0928d; --n10:#b2a4a0; --n11:#beb5b2; --n12:#ece6e5;
     --clay:#ca7f68; --clay-hi:#db937d; --clay-on:#150a07;     /* tek sinyal: aktif/koşan */
     --sage:#84cc86; --brick:#c56c65; --sand:#ceb47e;          /* ok · hata · uyarı (desatüre) */
@@ -30,7 +30,7 @@
     font:14px/1.5 var(--disp); color:var(--ink);
     background:var(--bg);
     /* hafif warm vignette — düz siyah değil, fosfor sıcaklığı */
-    background-image:radial-gradient(140% 90% at 50% -20%, #1c1a18 0%, var(--n1) 60%);
+    background-image:radial-gradient(140% 90% at 50% -20%, #2a2522 0%, var(--n1) 60%);
     background-attachment:fixed; min-height:100vh; -webkit-font-smoothing:antialiased;
     letter-spacing:.1px;
   }
@@ -392,7 +392,7 @@ function render(s,hist,runs,commits,prs){
         <div class="lm2">${esc((p.user&&p.user.login)||"")} · ${esc(p.head&&p.head.ref)} · ${ago(p.updated_at)}</div></div></div></a>`;}).join("");
   }else pr+=`<div class="empty">açık PR yok</div>`;
   pr+=`</div></div>`;
-  $("#reg-bottom").innerHTML=mg+pr;
+  $("#reg-bottom").innerHTML=pr+mg;
 
   first=false;paintFresh();
 }
