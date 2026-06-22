@@ -8,167 +8,209 @@
 <link rel="icon" href="data:," />
 <title>ali-yeni · Staging Monitör</title>
 <style>
-  /* AirMed marka (navy→mauve) · register: product · restrained color, amaçlı hareket */
+  /* AirMed ops monitör · Apple semantic dark palette · marka gradyanı yalnız header'da
+     · glass yalnız overlay'de · gerçek yüzdeler + auto-scale grafikler */
   :root{
-    --navy:#26296b; --mid:#34306e; --mauve:#5a3a56;
-    --bg:#0c0d18; --panel:#13142a; --panel-2:#171933;
-    --bd:rgba(255,255,255,.09); --bd-soft:rgba(255,255,255,.055);
-    --ink:#f0f1fb; --dim:#9ea4c8; --faint:#676d92;
-    /* warm advances (ch09): koşan iş sıcak/öne çıkar; kuyruk amber; biten geri çekilir */
-    --run:#f5b942; --run-bg:rgba(245,185,66,.10);
-    --queue:#7aa2ff; --queue-bg:rgba(122,162,255,.10);
-    --ok:#3ddc97; --warn:#f5b942; --bad:#fb7185; --idle:#5b6079;
+    --bg:#080a11; --bg2:#0a0c15;
+    --s1:#11131f; --s2:#161927; --s3:#1c2030;
+    --bd:rgba(255,255,255,.08); --bd2:rgba(255,255,255,.05); --hair:rgba(255,255,255,.045);
+    --ink:#f2f4fc; --dim:#99a0c6; --faint:#646a8e;
+    /* Apple dark-mode system colors — her renk anlam taşır */
+    --blue:#0a84ff; --green:#30d158; --orange:#ff9f0a; --red:#ff453a; --teal:#64d2ff; --purple:#bf5af2;
+    --run:var(--orange); --queue:var(--teal); --ok:var(--green); --bad:var(--red); --idle:#5b6079;
+    --brand-a:#26296b; --brand-b:#34306e; --brand-c:#5a3a56;
+    --r:16px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{
-    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
     color:var(--ink); background:var(--bg);
-    background-image:radial-gradient(900px 480px at 8% -8%, #23265e 0%, transparent 55%),
-                     radial-gradient(760px 460px at 112% 4%, #4a3149 0%, transparent 52%);
-    min-height:100vh; padding:env(safe-area-inset-top) 14px 48px;
-    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1100px 560px at 6% -10%, #1a1d40 0%, transparent 55%),
+                     radial-gradient(900px 540px at 116% -4%, #3a2740 0%, transparent 52%);
+    background-attachment:fixed; min-height:100vh; -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:780px;margin:0 auto}
-  header{display:flex;align-items:center;gap:12px;padding:18px 2px 10px}
-  .logo{width:36px;height:36px;border-radius:10px;flex:0 0 auto;font-weight:800;
-    background:linear-gradient(150deg,var(--navy),var(--mauve));display:grid;place-items:center;
-    box-shadow:0 6px 16px rgba(0,0,0,.4)}
-  h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
-  .sub{font-size:12px;color:var(--dim);margin-top:1px}
-  .gear{margin-left:auto;background:var(--panel);border:1px solid var(--bd);color:var(--dim);
-    width:38px;height:38px;border-radius:10px;font-size:17px;cursor:pointer}
-  .gear:active{transform:scale(.93)}
+  .num{font-variant-numeric:tabular-nums}
+  svg.ic{width:1em;height:1em;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.13em;flex:0 0 auto}
 
-  .fresh{display:flex;align-items:center;gap:9px;margin:2px 2px 18px;font-size:12.5px;color:var(--dim)}
+  /* ---------- shell ---------- */
+  .top{position:sticky;top:0;z-index:20;padding:env(safe-area-inset-top) 0 0;
+    background:linear-gradient(180deg,rgba(8,10,17,.92),rgba(8,10,17,.55) 70%,transparent);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  header{display:flex;align-items:center;gap:12px;max-width:1480px;margin:0 auto;padding:12px 16px 8px}
+  .logo{width:34px;height:34px;border-radius:10px;flex:0 0 auto;font-weight:800;color:#fff;font-size:15px;
+    background:linear-gradient(135deg,var(--brand-a),var(--brand-b) 55%,var(--brand-c));
+    display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.18)}
+  h1{font-size:14.5px;margin:0;font-weight:700;letter-spacing:.2px}
+  .sub{font-size:11.5px;color:var(--dim);margin-top:1px}
+  .fresh{display:flex;align-items:center;gap:7px;margin-left:auto;font-size:12px;color:var(--dim)}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--idle);flex:0 0 auto}
-  .dot.live{background:var(--ok);animation:pulse 2.4s infinite}
-  .dot.stale{background:var(--bad);animation:none}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,220,151,.5)}70%{box-shadow:0 0 0 6px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+  .dot.live{background:var(--ok);box-shadow:0 0 0 0 rgba(48,209,88,.5);animation:pulse 2.4s infinite}
+  .dot.stale{background:var(--bad)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(48,209,88,.5)}70%{box-shadow:0 0 0 6px rgba(48,209,88,0)}100%{box-shadow:0 0 0 0 rgba(48,209,88,0)}}
+  .gear{background:var(--s2);border:1px solid var(--bd);color:var(--dim);width:34px;height:34px;border-radius:9px;font-size:15px;cursor:pointer;flex:0 0 auto}
+  .gear:hover{color:var(--ink);border-color:var(--bd)}
+  .gear:active{transform:scale(.93)}
+  .gear:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
-  /* ---- hero: İŞ AKIŞI (dominance ch06 — en büyük, en üstte, en yüksek kontrast) ---- */
-  .hero{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--bd);
-    border-radius:20px;padding:16px 16px 8px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
-  .hero-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-  .hero-head h2{font-size:13px;letter-spacing:.5px;margin:0;font-weight:700}
+  /* ---------- layout ---------- */
+  .grid{max-width:1480px;margin:0 auto;padding:6px 16px 40px;display:grid;gap:14px}
+  .region{min-width:0}
+  .sec{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--faint);margin:2px 4px 9px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .sec .c{margin-left:auto;color:var(--dim);font-weight:700;letter-spacing:0;text-transform:none;font-size:12px}
+  .panel{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--bd);border-radius:var(--r);
+    box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 12px 30px -18px rgba(0,0,0,.7)}
+  .pad{padding:5px 15px}
+
+  /* ---------- hero: queues + jobs ---------- */
+  .hero-head{display:flex;align-items:center;gap:9px;padding:14px 16px 4px}
+  .hero-head .ti{font-size:13px;font-weight:700;letter-spacing:.3px}
   .chips{margin-left:auto;display:flex;gap:7px}
-  .chip{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
-  .chip.q{color:var(--queue);background:var(--queue-bg)}
-  .chip.r{color:var(--run);background:var(--run-bg)}
-  .chip b{font-variant-numeric:tabular-nums}
+  .chip{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;line-height:1}
+  .chip.q{color:var(--queue);background:rgba(100,210,255,.12)}
+  .chip.r{color:var(--run);background:rgba(255,159,10,.13)}
 
-  .job{display:flex;align-items:flex-start;gap:12px;padding:13px 4px;border-top:1px solid var(--bd-soft);position:relative}
-  .job:first-of-type{border-top:0}
-  .job .acc{width:3px;align-self:stretch;border-radius:3px;flex:0 0 auto;margin:1px 0}
-  .job.run .acc{background:var(--run)}
-  .job.queue .acc{background:var(--queue);opacity:.55}
-  .job-main{flex:1;min-width:0}
-  .job-name{font-size:17px;font-weight:700;line-height:1.2;letter-spacing:-.1px;word-break:break-word}
-  .job-meta{font-size:12px;color:var(--dim);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 8px}
-  .job-meta .b{color:var(--ink);font-weight:600}
-  .progress{height:4px;border-radius:4px;background:rgba(255,255,255,.07);margin-top:10px;overflow:hidden}
-  .progress > i{display:block;height:100%;width:40%;border-radius:4px;
-    background:linear-gradient(90deg,transparent,var(--run),transparent);animation:shimmer 1.5s linear infinite}
-  @keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
-  .job-side{flex:0 0 auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-  .elapsed{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--run)}
-  .job.queue .elapsed{color:var(--queue)}
+  .run{padding:13px 16px;border-top:1px solid var(--hair)}
+  .run:first-of-type{border-top:0}
+  .run-top{display:flex;align-items:center;gap:10px}
+  .run-glyph{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;font-size:15px}
+  .run.r .run-glyph{color:var(--run);background:rgba(255,159,10,.13)}
+  .run.q .run-glyph{color:var(--queue);background:rgba(100,210,255,.12)}
+  .run-id{flex:1;min-width:0}
+  .run-name{font-size:16px;font-weight:700;letter-spacing:-.1px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .run-meta{font-size:11.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .run-meta b{color:var(--ink);font-weight:600}
+  .run-side{text-align:right;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+  .run-pct{font-size:17px;font-weight:750;line-height:1}
+  .run.r .run-pct{color:var(--run)} .run.q .run-pct{color:var(--queue)}
+  .run-el{font-size:11px;color:var(--faint)}
+  .deploy{color:#fff;font-size:10px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:6px;
+    background:linear-gradient(135deg,var(--brand-a),var(--brand-c))}
 
-  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.3px;white-space:nowrap}
-  .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
-  .p-run{color:var(--run);background:var(--run-bg)}
-  .p-run::before{animation:pulse 2s infinite}
-  .p-queue{color:var(--queue);background:var(--queue-bg)}
-  .p-queue::before{animation:blink 1.4s ease-in-out infinite}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-  .p-ok{color:var(--ok);background:rgba(61,220,151,.12)}
-  .p-bad{color:var(--bad);background:rgba(251,113,133,.13)}
-  .p-warn{color:var(--warn);background:rgba(245,185,66,.13)}
-  .p-idle{color:var(--idle);background:rgba(91,96,121,.16)}
-  .deploy{color:#fff;background:linear-gradient(150deg,var(--navy),var(--mauve));padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700}
+  .pbar{height:6px;border-radius:5px;background:rgba(255,255,255,.07);margin-top:10px;overflow:hidden;position:relative}
+  .pbar > i{display:block;height:100%;border-radius:5px;transition:width .7s cubic-bezier(.3,1,.4,1);position:relative;overflow:hidden}
+  .run.r .pbar > i{background:linear-gradient(90deg,#ff8a00,var(--run))}
+  .run.q .pbar > i{background:linear-gradient(90deg,#3aa0c0,var(--queue))}
+  .pbar > i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);
+    transform:translateX(-100%);animation:sheen 1.6s ease-in-out infinite}
+  .run.q .pbar > i::after{animation-duration:2.2s}
 
-  .calm{display:flex;align-items:center;gap:10px;padding:18px 4px 22px;color:var(--faint);font-size:13.5px}
+  /* jobs inside a run (sıralı) */
+  .jobs{margin-top:11px;display:flex;flex-direction:column;gap:1px;padding-left:40px}
+  .job{display:flex;align-items:center;gap:9px;padding:6px 0}
+  .job .jd{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--idle)}
+  .job.done .jd{background:var(--ok)}
+  .job.act .jd{background:var(--run);animation:pulse 1.8s infinite}
+  .job.fail .jd{background:var(--bad)}
+  .job .jn{font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+  .job.act .jn{color:var(--ink);font-weight:600}
+  .job .jmini{width:52px;height:4px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;flex:0 0 auto}
+  .job .jmini > i{display:block;height:100%;border-radius:3px;background:var(--run);transition:width .6s ease}
+  .job.done .jmini > i{background:var(--ok)}
+  .job .jp{font-size:11px;color:var(--faint);width:30px;text-align:right;flex:0 0 auto}
+
+  .calm{display:flex;align-items:center;gap:10px;padding:20px 16px 24px;color:var(--faint);font-size:13.5px}
   .calm .dot{background:var(--ok);animation:pulse 2.4s infinite}
 
-  .sec{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--faint);margin:22px 6px 9px;font-weight:700}
-  .panel{background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:4px 15px}
+  @keyframes sheen{0%{transform:translateX(-100%)}60%,100%{transform:translateX(220%)}}
 
-  .item{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--bd-soft)}
+  /* ---------- items (merge / pr) ---------- */
+  .item{display:flex;align-items:center;gap:11px;padding:10px 0;border-top:1px solid var(--hair)}
   .item:first-child{border-top:0}
+  .item .gl{color:var(--faint);font-size:15px;flex:0 0 auto}
   .item .body{flex:1;min-width:0}
-  .item .t{font-size:14px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .item .m{font-size:12px;color:var(--dim);margin-top:2px}
-  .item .r{margin-left:auto;text-align:right;font-size:12px;color:var(--dim);white-space:nowrap;flex:0 0 auto}
-  a.lk{text-decoration:none;color:inherit;display:block}
-  a.lk:active{opacity:.7}
-  .enter{animation:enter .42s cubic-bezier(.22,1,.36,1)}
-  @keyframes enter{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
-  .num{font-variant-numeric:tabular-nums;color:var(--faint)}
+  .item .t{font-size:13.5px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .m{font-size:11.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .r{margin-left:auto;text-align:right;font-size:11.5px;color:var(--faint);white-space:nowrap;flex:0 0 auto}
+  a.lk{text-decoration:none;color:inherit;display:block;border-radius:8px}
+  a.lk:hover{background:rgba(255,255,255,.025)}
+  a.lk:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+  .enter{animation:enter .45s cubic-bezier(.22,1,.36,1)}
+  @keyframes enter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
-  .failbanner{display:flex;align-items:center;gap:9px;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);
-    color:#ffd9df;border-radius:12px;padding:10px 13px;margin:11px 0;font-size:13px;font-weight:600}
-
-  .svc{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--bd-soft);font-size:14px}
+  /* ---------- services ---------- */
+  .failban{display:flex;align-items:center;gap:8px;background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.32);
+    color:#ffd2cf;border-radius:11px;padding:9px 12px;margin:10px 0;font-size:12.5px;font-weight:600}
+  .svc{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--hair);font-size:13.5px}
   .svc:first-child{border-top:0}
-  .svc .nm{font-weight:600}
-  .svc .meta{font-size:12px;color:var(--faint);margin-left:2px}
-  .svc .st{margin-left:auto}
-  .sdot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
-  .s-ok{background:var(--ok)} .s-bad{background:var(--bad)} .s-idle{background:var(--idle)}
+  .svc .sd{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .s-ok{background:var(--ok);box-shadow:0 0 7px -1px var(--ok)} .s-bad{background:var(--bad);box-shadow:0 0 7px -1px var(--bad)} .s-idle{background:var(--idle)}
+  .svc .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .svc .meta{font-size:11.5px;color:var(--faint);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .svc .stt{font-size:11px;font-weight:700;color:var(--faint);flex:0 0 auto}
+  .svc.bad .stt{color:var(--bad)} .svc.ok .stt{color:var(--ok)}
 
-  /* ---- sistem: mini grafikler ---- */
-  .sysgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
-  .scard{background:var(--panel);border:1px solid var(--bd);border-radius:15px;padding:12px 13px}
-  .scard h3{font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--faint);margin:0 0 6px;font-weight:700}
-  .sval{font-size:23px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums}
-  .sval .u{font-size:12px;color:var(--dim);font-weight:600}
-  .spark{width:100%;height:34px;display:block;margin-top:8px}
-  .gauge2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px}
-  .gcard{background:var(--panel);border:1px solid var(--bd);border-radius:15px;padding:12px 13px;display:flex;align-items:center;gap:12px}
-  .ring{position:relative;width:50px;height:50px;border-radius:50%;flex:0 0 auto;
-    background:conic-gradient(var(--c,var(--ok)) calc(var(--p,0)*1%),rgba(255,255,255,.08) 0);display:grid;place-items:center}
-  .ring::after{content:"";width:38px;height:38px;border-radius:50%;background:var(--panel)}
-  .ring span{position:absolute;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
-  .gcard .lbl{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);font-weight:700}
-  .gcard .v2{font-size:15px;font-weight:700;margin-top:2px}
+  /* ---------- system: accurate sparklines + gauges ---------- */
+  .sys3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  .scard{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--bd);border-radius:14px;padding:12px 13px}
+  .scard h4{font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--faint);margin:0;font-weight:700;display:flex;align-items:center;gap:5px}
+  .scard .v{font-size:24px;font-weight:750;line-height:1;margin-top:7px}
+  .scard .v .u{font-size:12px;color:var(--dim);font-weight:600}
+  .spark{width:100%;height:38px;display:block;margin-top:6px;overflow:visible}
+  .rng{font-size:9.5px;color:var(--faint);display:flex;justify-content:space-between;margin-top:1px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px}
+  .gcard{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--bd);border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:11px}
+  .ring{position:relative;width:48px;height:48px;flex:0 0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .rv{position:absolute;inset:0;display:grid;place-items:center;font-size:11.5px;font-weight:700}
+  .gcard .gl2{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);font-weight:700}
+  .gcard .gv{font-size:14px;font-weight:700;margin-top:2px;white-space:nowrap}
+  .empty{color:var(--faint);font-size:12.5px;padding:14px 4px}
 
-  .empty{color:var(--faint);font-size:13px;padding:12px 2px}
+  /* ---------- responsive: masaüstü tek ekran bento ---------- */
+  @media (min-width:1024px){
+    .grid{grid-template-columns:1.5fr 1fr;grid-template-rows:1fr auto;height:calc(100dvh - 56px);
+      grid-template-areas:"flow side" "flow bottom";align-content:stretch}
+    #reg-flow{grid-area:flow;overflow:auto}
+    #reg-side{grid-area:side;overflow:auto;display:flex;flex-direction:column;gap:14px}
+    #reg-bottom{grid-area:bottom;display:grid;grid-template-columns:1fr 1fr;gap:14px;overflow:auto;max-height:34vh}
+    .region::-webkit-scrollbar{width:7px} .region::-webkit-scrollbar-thumb{background:var(--bd);border-radius:7px}
+  }
+  @media (min-width:1480px){
+    .grid{grid-template-columns:1.6fr 1fr 1fr;grid-template-areas:"flow side bottom";grid-template-rows:1fr}
+    #reg-bottom{grid-template-columns:1fr;max-height:none}
+  }
+  @media (max-width:1023px){
+    #reg-side,#reg-bottom{display:flex;flex-direction:column;gap:0}
+    .grid{gap:18px}
+  }
 
-  /* config */
-  .modal{position:fixed;inset:0;background:rgba(6,7,14,.8);display:none;align-items:center;justify-content:center;padding:20px;z-index:40;backdrop-filter:blur(4px)}
+  /* ---------- config ---------- */
+  .modal{position:fixed;inset:0;background:rgba(5,6,12,.82);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;backdrop-filter:blur(5px)}
   .modal.show{display:flex}
-  .sheet{background:#15172e;border:1px solid var(--bd);border-radius:20px;max-width:440px;width:100%;padding:22px}
+  .sheet{background:var(--s2);border:1px solid var(--bd);border-radius:20px;max-width:440px;width:100%;padding:22px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8)}
   .sheet h3{margin:0 0 4px;font-size:17px}
   .sheet p{color:var(--dim);font-size:13px;margin:0 0 14px}
   label{display:block;font-size:12px;color:var(--dim);margin:12px 0 5px}
-  input{width:100%;background:#0c0e1e;border:1px solid var(--bd);border-radius:11px;color:var(--ink);padding:12px;font-size:14px;font-family:inherit}
-  input:focus{outline:none;border-color:#6f6cc0}
-  .btn{margin-top:18px;width:100%;border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(150deg,var(--navy),var(--mauve))}
+  input{width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:11px;color:var(--ink);padding:12px;font-size:14px;font-family:inherit}
+  input:focus{outline:none;border-color:var(--blue)}
+  .btn{margin-top:18px;width:100%;border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--brand-a),var(--brand-c))}
   .btn:active{opacity:.9}
   .btn.ghost{background:none;border:1px solid var(--bd);color:var(--dim);margin-top:9px}
+  .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   .err{color:var(--bad);font-size:12px;margin-top:10px;min-height:14px}
   .hint{font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5}
   code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:5px;font-size:12px}
 
   @media (prefers-reduced-motion: reduce){
-    *{animation:none !important;transition:none !important}
-    .progress > i{width:100%;background:var(--run);opacity:.5}
+    *{animation:none !important}
+    .pbar > i::after{display:none}
+    .pbar > i,.job .jmini > i{transition:none}
   }
-  @media (max-width:430px){ .sysgrid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo">A</div>
-    <div>
-      <h1>Staging Monitör</h1>
-      <div class="sub" id="hostline">ali-yeni · bağlanıyor…</div>
-    </div>
-    <button class="gear" id="gear" title="Ayarlar">⚙</button>
-  </header>
-  <div class="fresh"><span class="dot" id="dot"></span><span id="freshtxt">—</span><span style="margin-left:auto" id="uptime"></span></div>
-  <main id="app"></main>
+<div class="top"><header>
+  <div class="logo">A</div>
+  <div><h1>Staging Monitör</h1><div class="sub" id="hostline">ali-yeni · bağlanıyor…</div></div>
+  <div class="fresh"><span class="dot" id="dot"></span><span id="freshtxt">—</span></div>
+  <button class="gear" id="gear" title="Ayarlar" aria-label="Ayarlar">⚙</button>
+</header></div>
+
+<div class="grid">
+  <section class="region" id="reg-flow"></section>
+  <section class="region" id="reg-side"></section>
+  <section class="region" id="reg-bottom"></section>
 </div>
 
 <div class="modal" id="modal">
@@ -194,6 +236,19 @@ const $=s=>document.querySelector(s);
 const cfg=()=>{try{return JSON.parse(localStorage.getItem(LS))||{}}catch{return{}}};
 const setCfg=c=>localStorage.setItem(LS,JSON.stringify(c));
 let timer=null,lastTs=null,seenMerge=new Set(),seenPr=new Set(),first=true;
+
+// lucide-style inline icons (emoji yok — anayasa)
+const IC={
+  clock:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  play:'<svg class="ic" viewBox="0 0 24 24"><path d="M7 5l11 7-11 7z"/></svg>',
+  zap:'<svg class="ic" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  alert:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg>',
+  merge:'<svg class="ic" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="8" r="2.4"/><path d="M6 8.4v7.2"/><path d="M18 10.4c0 4-3 5-5.5 5.6"/></svg>',
+  pr:'<svg class="ic" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M6 8.4v7.2"/><path d="M18 9v6.6"/><path d="M13 6h3a2 2 0 0 1 2 2"/></svg>',
+  cpu:'<svg class="ic" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
+  therm:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 4a2 2 0 0 1 2 2v8a4 4 0 1 1-4 0V6a2 2 0 0 1 2-2z"/></svg>',
+  ram:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 17v3M12 17v3M17 17v3"/></svg>',
+};
 
 function openModal(){const c=cfg();$("#f-token").value=c.token||"";$("#f-statusrepo").value=c.statusRepo||"DNA-Software-Solutions/airmed-status";$("#f-actionsrepo").value=c.actionsRepo||"DNA-Software-Solutions/airmed-hbys";$("#cfgerr").textContent="";$("#modal").classList.add("show");}
 function closeModal(){$("#modal").classList.remove("show");}
@@ -221,6 +276,7 @@ const fetchHistory=c=>gh(`https://api.github.com/repos/${c.statusRepo}/contents/
 const fetchRuns   =c=>gh(`https://api.github.com/repos/${c.actionsRepo}/actions/runs?per_page=30`,c,false).catch(()=>null);
 const fetchCommits=c=>gh(`https://api.github.com/repos/${c.actionsRepo}/commits?sha=main&per_page=8`,c,false).catch(()=>null);
 const fetchPRs    =c=>gh(`https://api.github.com/repos/${c.actionsRepo}/pulls?state=open&sort=updated&direction=desc&per_page=8`,c,false).catch(()=>null);
+const fetchJobs   =(c,id)=>gh(`https://api.github.com/repos/${c.actionsRepo}/actions/runs/${id}/jobs`,c,false).then(j=>j.jobs||[]).catch(()=>[]);
 
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const clamp=n=>Math.max(0,Math.min(100,Number(n)||0));
@@ -231,123 +287,145 @@ function hms(iso){let s=Math.round((Date.now()-new Date(iso))/1000);if(s<0)s=0;
   return h?`${h}:${String(m%60).padStart(2,"0")}:${String(ss).padStart(2,"0")}`:`${m}:${String(ss).padStart(2,"0")}`;}
 function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);return d?`${d}g ${h}sa`:h?`${h}sa ${m}dk`:`${m}dk`;}
 const isDeploy=r=>/deploy/i.test((r.name||"")+" "+(r.path||""));
-function cpuColor(p){p=Number(p)||0;return p>=90?"var(--bad)":p>=70?"var(--warn)":"var(--ok)";}
-function tempColor(c){return c==null?"var(--idle)":c>=80?"var(--bad)":c>=65?"var(--warn)":"var(--ok)";}
+function cpuColor(p){p=Number(p)||0;return p>=90?"var(--bad)":p>=70?"var(--orange)":"var(--ok)";}
+function tempColor(c){return c==null?"var(--idle)":c>=80?"var(--bad)":c>=65?"var(--orange)":"var(--ok)";}
 
-function sparkline(vals,max,color){
-  const w=120,h=34,n=vals.length;
-  if(n<2)return `<svg class="spark" viewBox="0 0 ${w} ${h}"><text x="0" y="22" fill="var(--faint)" font-size="10">veri toplanıyor…</text></svg>`;
-  const pts=vals.map((v,i)=>{const x=i/(n-1)*w;const y=h-2-(clamp((v??0)/max*100)/100)*(h-4);return [x,+y.toFixed(1)];});
-  const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1]).join(" ");
-  const area=`M0 ${h} L`+pts.map(p=>p[0].toFixed(1)+" "+p[1]).join(" L")+` L${w} ${h} Z`;
-  const last=pts[n-1];
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-    <path d="${area}" fill="${color}" opacity=".13"/>
-    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    <circle cx="${last[0].toFixed(1)}" cy="${last[1]}" r="2.2" fill="${color}"/></svg>`;
+function jobPct(j){const s=j.steps||[];if(!s.length)return j.status==="completed"?100:0;
+  const done=s.filter(x=>x.status==="completed").length;const half=s.some(x=>x.status==="in_progress")?.5:0;
+  return Math.min(100,Math.round((done+half)/s.length*100));}
+function runPct(r){const js=r.jobs||[];if(!js.length)return r.status==="completed"?100:0;
+  let d=0,t=0;js.forEach(j=>{const s=j.steps||[];const n=s.length||1;t+=n;
+    if(s.length){d+=s.filter(x=>x.status==="completed").length+(s.some(x=>x.status==="in_progress")?.5:0);}
+    else if(j.status==="completed")d+=1;});
+  return t?Math.min(100,Math.round(d/t*100)):0;}
+
+// auto-scale sparkline (gerçek varyasyonu gösterir)
+function spark(vals,color){
+  const v=vals.filter(x=>x!=null&&!isNaN(x));const w=130,h=38,n=v.length;
+  if(n<2)return {svg:`<svg class="spark" viewBox="0 0 ${w} ${h}"><text x="2" y="22" fill="var(--faint)" font-size="9">veri toplanıyor…</text></svg>`,rng:""};
+  let mn=Math.min(...v),mx=Math.max(...v);const span=mx-mn;const pad=span>0?span*0.18:Math.max(1,mx*0.05);
+  const lo=Math.max(0,mn-pad),hi=mx+pad;const rng=hi-lo||1;
+  const pts=v.map((x,i)=>[+(i/(n-1)*w).toFixed(1),+(h-2-((x-lo)/rng)*(h-4)).toFixed(1)]);
+  const line=pts.map((p,i)=>(i?"L":"M")+p[0]+" "+p[1]).join(" ");
+  const area=`M0 ${h} L`+pts.map(p=>p[0]+" "+p[1]).join(" L")+` L${w} ${h} Z`;const last=pts[n-1];
+  return {svg:`<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="g${color.replace(/[^a-z]/gi,'')}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${color}" stop-opacity=".28"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g${color.replace(/[^a-z]/gi,'')})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="2.4" fill="${color}"/></svg>`,
+    rng:`<div class="rng"><span>${Math.round(mn*10)/10}</span><span>${Math.round(mx*10)/10}</span></div>`};
 }
+function ring(pct,color){pct=clamp(pct);const r=20,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<div class="ring"><svg width="48" height="48" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+    <circle cx="24" cy="24" r="${r}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round"
+      stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg>
+    <div class="rv">${pct}%</div></div>`;}
 
-function runItem(r,kind){
-  const dep=isDeploy(r)?`<span class="deploy">DEPLOY</span>`:"";
-  const meta=`<span class="b">${esc(r.head_branch||"")}</span><span>${esc((r.actor&&r.actor.login)||"")}</span><span>${esc(r.event||"")}</span>`;
-  if(kind==="run")
-    return `<div class="job run"><div class="acc"></div><div class="job-main">
-      <div class="job-name">${esc(r.name||r.display_title)}</div>
-      <div class="job-meta">${meta}</div>
-      <div class="progress"><i></i></div></div>
-      <div class="job-side">${dep||'<span class="pill p-run">koşuyor</span>'}
-        <span class="elapsed" data-start="${esc(r.run_started_at||r.created_at)}">${hms(r.run_started_at||r.created_at)}</span></div></div>`;
-  return `<div class="job queue"><div class="acc"></div><div class="job-main">
-      <div class="job-name">${esc(r.name||r.display_title)}</div>
-      <div class="job-meta">${meta}</div></div>
-      <div class="job-side"><span class="pill p-queue">kuyrukta</span>
-        <span class="elapsed" data-wait="1" data-start="${esc(r.created_at)}">${hms(r.created_at)} bekliyor</span></div></div>`;
+function jobRow(j){
+  const st=j.status==="completed"?(j.conclusion&&j.conclusion!=="success"?"fail":"done"):(j.status==="in_progress"?"act":"");
+  const p=jobPct(j);const showbar=st==="act";
+  return `<div class="job ${st}"><span class="jd"></span><span class="jn">${esc(j.name)}</span>
+    ${showbar?`<span class="jmini"><i style="width:${p}%"></i></span><span class="jp num">${p}%</span>`:
+      `<span class="jp num">${st==="done"?"✓":st==="fail"?"✕":"—"}</span>`}</div>`;
+}
+function runCard(r,kind){
+  const pct=runPct(r);const dep=isDeploy(r)?`<span class="deploy">DEPLOY</span>`:"";
+  const meta=`<b>${esc(r.head_branch||"")}</b> · ${esc((r.actor&&r.actor.login)||"")} · ${esc(r.event||"")}`;
+  const glyph=kind==="r"?IC.play:IC.clock;
+  const side=kind==="r"
+    ? `<span class="run-pct num">${pct}%</span><span class="run-el num" data-start="${esc(r.run_started_at||r.created_at)}">${hms(r.run_started_at||r.created_at)}</span>`
+    : `<span class="run-pct num">kuyruk</span><span class="run-el num" data-wait="1" data-start="${esc(r.created_at)}">${hms(r.created_at)} bekliyor</span>`;
+  const jobs=(r.jobs&&r.jobs.length)?`<div class="jobs">${r.jobs.map(jobRow).join("")}</div>`:"";
+  return `<div class="run ${kind}"><div class="run-top">
+      <div class="run-glyph">${glyph}</div>
+      <div class="run-id"><div class="run-name">${esc(r.name||r.display_title)} ${dep}</div><div class="run-meta">${meta}</div></div>
+      <div class="run-side">${side}</div></div>
+    <div class="pbar"><i style="width:${kind==="r"?pct:6}%"></i></div>
+    ${jobs}</div>`;
 }
 
 function render(s,hist,runs,commits,prs){
   const sy=s.system||{};
-  $("#hostline").textContent=`${s.host||"ali-yeni"} · ${sy.cpuCount||"?"} vCPU · uptime ${dur(s.uptimeSec)}`;
+  $("#hostline").textContent=`${s.host||"ali-yeni"} · ${sy.cpuCount||"?"} vCPU · ${dur(s.uptimeSec)} uptime`;
   lastTs=s.ts;
 
-  // workflow akışı — kuyruk önce (kullanıcı önceliği)
+  // ---- region: flow (queues + jobs) ----
   const wr=(runs&&runs.workflow_runs)||[];
-  const queued=wr.filter(r=>r.status==="queued"||r.status==="waiting"||r.status==="pending");
+  const queued=wr.filter(r=>r.status==="queued"||r.status==="waiting"||r.status==="pending"||r.status==="requested");
   const running=wr.filter(r=>r.status==="in_progress");
   let flow;
-  if(queued.length||running.length){
-    flow=running.map(r=>runItem(r,"run")).join("")+queued.map(r=>runItem(r,"queue")).join("");
+  if(running.length||queued.length){
+    flow=running.map(r=>runCard(r,"r")).join("")+queued.map(r=>runCard(r,"q")).join("");
   }else{
     flow=`<div class="calm"><span class="dot"></span>Kuyruk boş — şu an koşan iş yok.</div>`;
   }
-  let html=`<div class="hero"><div class="hero-head"><h2>İŞ AKIŞI</h2>
-    <div class="chips"><span class="chip q">⏳ <b>${queued.length}</b> kuyrukta</span><span class="chip r">▶ <b>${running.length}</b> koşuyor</span></div></div>
+  $("#reg-flow").innerHTML=`<div class="panel">
+    <div class="hero-head"><span class="ti">İŞ AKIŞI</span>
+      <div class="chips"><span class="chip q">${IC.clock} <span class="num">${queued.length}</span> kuyrukta</span>
+      <span class="chip r">${IC.play} <span class="num">${running.length}</span> koşuyor</span></div></div>
     ${flow}</div>`;
 
-  // son merge'ler (main commit'leri = squash merge)
-  html+=`<div class="sec">Son merge'ler</div><div class="panel">`;
-  if(commits&&commits.length){
-    html+=commits.map(c=>{const msg=(c.commit.message||"").split("\n")[0];
-      const isNew=!first&&!seenMerge.has(c.sha);seenMerge.add(c.sha);
-      return `<a class="lk" href="${esc(c.html_url)}" target="_blank" rel="noopener"><div class="item${isNew?" enter":""}">
-        <div class="body"><div class="t">${esc(msg)}</div>
-        <div class="m">${esc((c.author&&c.author.login)||(c.commit.author&&c.commit.author.name)||"")} · ${ago(c.commit.author&&c.commit.author.date)} önce</div></div>
-        <div class="r">${esc((c.sha||"").slice(0,7))}</div></div></a>`;}).join("");
-  }else html+=`<div class="empty">merge bilgisi alınamadı</div>`;
-  html+=`</div>`;
-
-  // açık PR'lar (sırada)
-  if(prs&&prs.length){
-    html+=`<div class="sec">Açık PR'lar — sırada</div><div class="panel">`+
-      prs.map(p=>{const isNew=!first&&!seenPr.has(p.number);seenPr.add(p.number);
-        return `<a class="lk" href="${esc(p.html_url)}" target="_blank" rel="noopener"><div class="item${isNew?" enter":""}">
-          <div class="body"><div class="t">${esc(p.title)}</div>
-          <div class="m">${esc((p.user&&p.user.login)||"")} · ${esc(p.head&&p.head.ref)} · ${ago(p.updated_at)} önce</div></div>
-          <div class="r">#${p.number}${p.draft?' <span class="pill p-idle" style="margin-left:4px">taslak</span>':""}</div></div></a>`;}).join("")+`</div>`;
-  }
-
-  // servisler
-  html+=`<div class="sec">Sunucu servisleri</div><div class="panel">`;
-  const failed=s.failedUnits||[];
-  if(failed.length) html+=`<div class="failbanner">⚠ ${failed.length} servis HATA durumunda: ${failed.map(esc).join(", ")}</div>`;
-  const svcRow=(nm,active,meta)=>{const ok=active==="active",bad=active==="failed";
-    return `<div class="svc"><span class="sdot ${bad?'s-bad':ok?'s-ok':'s-idle'}"></span><span class="nm">${esc(nm)}</span>
-      ${meta?`<span class="meta">${esc(meta)}</span>`:""}<span class="st"><span class="pill ${bad?'p-bad':ok?'p-ok':'p-idle'}">${esc(active)}</span></span></div>`;};
-  (s.hostServices||[]).forEach(h=>html+=svcRow(h.name,h.active,h.sub));
-  (s.runners||[]).forEach(r=>html+=svcRow(r.name,r.active,"runner"));
-  (s.containers||[]).forEach(c=>{const st=c.state!=="running"?"failed":"active";
-    html+=svcRow(c.name.replace(/^airmed-staging-/,"stg/"),st,c.healthy?"healthy":c.status);});
-  if(s.staging&&s.staging.health) html+=svcRow("api /health",(s.staging.health.status==="ok"?"active":"failed"),"v"+s.staging.health.version);
-  html+=`</div>`;
-
-  // sistem mini grafikler
-  const H=hist||[];
-  const cpuArr=H.map(x=>x.cpu),tArr=H.map(x=>x.temp),mArr=H.map(x=>x.mem);
-  html+=`<div class="sec">Sistem</div><div class="sysgrid">
-    <div class="scard"><h3>CPU</h3><div class="sval" style="color:${cpuColor(sy.cpuPct)}">${(sy.cpuPct??0)}<span class="u">%</span></div>${sparkline(cpuArr,100,"var(--ok)")}</div>
-    <div class="scard"><h3>Sıcaklık</h3><div class="sval" style="color:${tempColor(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${sparkline(tArr,100,"var(--warn)")}</div>
-    <div class="scard"><h3>RAM</h3><div class="sval">${(sy.memPct??0)}<span class="u">%</span></div>${sparkline(mArr,100,"var(--queue)")}</div>
-  </div>`;
+  // ---- region: side (system + services) ----
+  const H=hist||[];const cs=spark(H.map(x=>x.cpu),"#30d158"),ts=spark(H.map(x=>x.temp),"#ff9f0a"),ms=spark(H.map(x=>x.mem),"#64d2ff");
   const bat=sy.batteryPct,disk=sy.diskPct;
-  html+=`<div class="gauge2">
-    <div class="gcard"><div class="ring" style="--p:${clamp(disk)};--c:${cpuColor(disk)}"><span>${disk??"—"}%</span></div>
-      <div><div class="lbl">Disk</div><div class="v2">${sy.diskUsedGb||0}/${sy.diskTotalGb||0} GB</div></div></div>
-    <div class="gcard"><div class="ring" style="--p:${clamp(bat)};--c:${bat!=null&&bat<20?'var(--bad)':'var(--ok)'}"><span>${bat==null?"—":bat+"%"}</span></div>
-      <div><div class="lbl">Batarya</div><div class="v2">${sy.acOnline?"⚡ şarjda":esc(sy.batteryState||"")}</div></div></div>
-  </div>`;
+  let sideHtml=`<div class="region"><div class="sec">Sistem</div>
+    <div class="sys3">
+      <div class="scard"><h4>${IC.cpu} CPU</h4><div class="v" style="color:${cpuColor(sy.cpuPct)}">${sy.cpuPct??0}<span class="u">%</span></div>${cs.svg}${cs.rng}</div>
+      <div class="scard"><h4>${IC.therm} Isı</h4><div class="v" style="color:${tempColor(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${ts.svg}${ts.rng}</div>
+      <div class="scard"><h4>${IC.ram} RAM</h4><div class="v">${sy.memPct??0}<span class="u">%</span></div>${ms.svg}${ms.rng}</div>
+    </div>
+    <div class="g2">
+      <div class="gcard">${ring(disk,disk>=90?'var(--red)':disk>=70?'var(--orange)':'var(--green)')}<div><div class="gl2">Disk</div><div class="gv num">${sy.diskUsedGb||0}/${sy.diskTotalGb||0} GB</div></div></div>
+      <div class="gcard">${ring(bat==null?0:bat,bat!=null&&bat<20?'var(--red)':'var(--green)')}<div><div class="gl2">Batarya</div><div class="gv">${sy.acOnline?IC.zap+" şarjda":esc(sy.batteryState||"—")}</div></div></div>
+    </div></div>`;
 
-  $("#app").innerHTML=html;
-  first=false;
-  paintFresh();
+  const failed=s.failedUnits||[];
+  let svc=`<div class="region"><div class="sec">Servisler${failed.length?`<span class="c" style="color:var(--bad)">${failed.length} hata</span>`:`<span class="c" style="color:var(--ok)">tümü çalışıyor</span>`}</div><div class="panel pad">`;
+  if(failed.length)svc+=`<div class="failban">${IC.alert} HATA: ${failed.map(esc).join(", ")}</div>`;
+  const row=(nm,active,meta)=>{const ok=active==="active",bad=active==="failed";
+    return `<div class="svc ${bad?'bad':ok?'ok':''}"><span class="sd ${bad?'s-bad':ok?'s-ok':'s-idle'}"></span>
+      <span class="nm">${esc(nm)}</span><span class="meta">${esc(meta||"")}</span><span class="stt">${esc(active)}</span></div>`;};
+  (s.hostServices||[]).forEach(h=>svc+=row(h.name,h.active,h.sub));
+  (s.runners||[]).forEach(r=>svc+=row(r.name,r.active,"runner"));
+  (s.containers||[]).forEach(c=>svc+=row(c.name.replace(/^airmed-staging-/,"stg/"),c.state!=="running"?"failed":"active",c.healthy?"healthy":c.status));
+  if(s.staging&&s.staging.health)svc+=row("api /health",s.staging.health.status==="ok"?"active":"failed","v"+s.staging.health.version);
+  svc+=`</div></div>`;
+  $("#reg-side").innerHTML=sideHtml+svc;
+
+  // ---- region: bottom (merges + PRs) ----
+  let mg=`<div class="region"><div class="sec">${IC.merge} Son merge'ler</div><div class="panel pad">`;
+  if(commits&&commits.length){
+    mg+=commits.map(c=>{const msg=(c.commit.message||"").split("\n")[0];const isNew=!first&&!seenMerge.has(c.sha);seenMerge.add(c.sha);
+      return `<a class="lk" href="${esc(c.html_url)}" target="_blank" rel="noopener"><div class="item${isNew?" enter":""}">
+        <span class="gl">${IC.merge}</span><div class="body"><div class="t">${esc(msg)}</div>
+        <div class="m">${esc((c.author&&c.author.login)||(c.commit.author&&c.commit.author.name)||"")} · ${ago(c.commit.author&&c.commit.author.date)} önce</div></div>
+        <div class="r num">${esc((c.sha||"").slice(0,7))}</div></div></a>`;}).join("");
+  }else mg+=`<div class="empty">merge bilgisi alınamadı</div>`;
+  mg+=`</div></div>`;
+
+  let pr=`<div class="region"><div class="sec">${IC.pr} Açık PR'lar<span class="c">${prs?prs.length:0} sırada</span></div><div class="panel pad">`;
+  if(prs&&prs.length){
+    pr+=prs.map(p=>{const isNew=!first&&!seenPr.has(p.number);seenPr.add(p.number);
+      return `<a class="lk" href="${esc(p.html_url)}" target="_blank" rel="noopener"><div class="item${isNew?" enter":""}">
+        <span class="gl">${IC.pr}</span><div class="body"><div class="t">${esc(p.title)}</div>
+        <div class="m">${esc((p.user&&p.user.login)||"")} · ${esc(p.head&&p.head.ref)} · ${ago(p.updated_at)} önce</div></div>
+        <div class="r num">#${p.number}</div></div></a>`;}).join("");
+  }else pr+=`<div class="empty">açık PR yok</div>`;
+  pr+=`</div></div>`;
+  $("#reg-bottom").innerHTML=mg+pr;
+
+  first=false;paintFresh();
 }
 
-function tickElapsed(){document.querySelectorAll(".elapsed[data-start]").forEach(el=>{
+function tickElapsed(){document.querySelectorAll("[data-start]").forEach(el=>{
   el.textContent=el.dataset.wait?(hms(el.dataset.start)+" bekliyor"):hms(el.dataset.start);});}
-
 function paintFresh(){
   if(!lastTs){$("#freshtxt").textContent="—";return;}
-  const sec=Math.round((Date.now()-new Date(lastTs))/1000);const stale=sec>90;
+  const stale=Math.round((Date.now()-new Date(lastTs))/1000)>90;
   $("#dot").className="dot "+(stale?"stale":"live");
-  $("#freshtxt").textContent=(stale?"⚠ veri bayat · ":"")+"toplandı "+ago(lastTs)+" önce";
+  $("#freshtxt").textContent=(stale?"⚠ bayat · ":"")+ago(lastTs);
   $("#freshtxt").style.color=stale?"var(--bad)":"var(--dim)";
 }
 
@@ -355,6 +433,10 @@ async function tick(){
   const c=cfg();
   try{
     const [s,hist,runs,commits,prs]=await Promise.all([fetchStatus(c),fetchHistory(c),fetchRuns(c),fetchCommits(c),fetchPRs(c)]);
+    // gerçek yüzde için aktif run'ların job'larını çek (sıralı işler)
+    const wr=(runs&&runs.workflow_runs)||[];
+    const active=wr.filter(r=>["in_progress","queued","waiting","pending","requested"].includes(r.status)).slice(0,6);
+    await Promise.all(active.map(r=>fetchJobs(c,r.id).then(j=>r.jobs=j)));
     render(s,hist,runs,commits,prs);
   }catch(e){
     $("#hostline").textContent="hata: "+e.message;$("#dot").className="dot stale";
@@ -362,9 +444,7 @@ async function tick(){
   }
 }
 function start(){if(timer)clearInterval(timer);tick();timer=setInterval(tick,15000);}
-setInterval(tickElapsed,1000);
-setInterval(paintFresh,5000);
-
+setInterval(tickElapsed,1000);setInterval(paintFresh,5000);
 (function(){const c=cfg();if(!c.token||!c.statusRepo)openModal();else start();})();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick();});
 </script>
