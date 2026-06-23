@@ -63,6 +63,10 @@
   .lab .rule{flex:1;height:1px;background:var(--line)}
   .lab .ct{color:var(--ghost);letter-spacing:1px}
   .lab .ct.warn{color:var(--brick)} .lab .ct.ok{color:var(--n8)}
+  /* termal kısılma (throttle) uyarısı — aktifken yanıp söner */
+  .lab .ct.thrwarn{color:var(--brick);display:inline-flex;align-items:center;gap:3px;animation:thrpulse 1.5s ease-in-out infinite}
+  .ct.thrwarn svg.ic{width:11px;height:11px}
+  @keyframes thrpulse{0%,100%{opacity:1}50%{opacity:.4}}
 
   /* ---- pipeline ledger (queues + jobs) ---- */
   .runs{display:flex;flex-direction:column}
@@ -365,10 +369,12 @@ function render(s,hist,runs,commits,prs){
   const H=hist||[];
   const cs=scope(H.map(x=>x.cpu),cpuC(sy.cpuPct)),ts=scope(H.map(x=>x.temp),tmpC(sy.tempMaxC)),ms=scope(H.map(x=>x.mem),memC(sy.memPct));
   const bat=sy.batteryPct,disk=sy.diskPct;
-  let side=`<div class="blk"><div class="lab">SİSTEM DURUMU<span class="rule"></span></div>
+  const thrTag=sy.throttling?`<span class="ct thrwarn">${IC.alert} KISILMA</span>`
+    :(sy.freqPct!=null?`<span class="ct">hız %${sy.freqPct}</span>`:"");
+  let side=`<div class="blk"><div class="lab">SİSTEM DURUMU<span class="rule"></span>${thrTag}</div>
     <div class="cluster">
       <div class="gel"><div class="gl">${IC.cpu} CPU</div><div class="gv" style="color:${cpuC(sy.cpuPct)}">${sy.cpuPct??0}<span class="u">%</span></div>${cs.svg}${cs.rg}</div>
-      <div class="gel"><div class="gl">${IC.therm} SICAKLIK</div><div class="gv" style="color:${tmpC(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${ts.svg}${ts.rg}</div>
+      <div class="gel"><div class="gl">${IC.therm} SICAKLIK</div><div class="gv" style="color:${sy.throttling?'var(--brick)':tmpC(sy.tempMaxC)}">${sy.tempMaxC==null?"—":sy.tempMaxC}<span class="u">°C</span></div>${ts.svg}${ts.rg}</div>
       <div class="gel"><div class="gl">${IC.ram} RAM</div><div class="gv" style="color:${memC(sy.memPct)}">${sy.memPct??0}<span class="u">%</span></div>${ms.svg}${ms.rg}</div>
     </div>
     <div class="meters">
