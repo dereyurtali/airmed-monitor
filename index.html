@@ -343,8 +343,9 @@ function render(s,hist,runs,commits,prs){
   if(queued.length){body+=grp("KUYRUK",queued.length)+queued.map(r=>runCard(r,"q",idx++)).join("");}
   if(body)flow=`<div class="runs">${body}</div>`;
   else flow=`<div class="idle"><span class="led on"></span>kuyruk boş · çalışan yok</div>`;
+  const rt=(s.runners||[]).length, rb=(s.runners||[]).filter(r=>r.busy).length;
   $("#reg-flow").innerHTML=`<div class="lab">İŞ AKIŞI<span class="rule"></span>
-    <span class="ct">${running.length} çalışan</span><span class="ct">${queued.length} kuyrukta</span></div>${flow}`;
+    <span class="ct">${running.length} çalışan</span><span class="ct">${queued.length} kuyrukta</span>${rt?`<span class="ct ${rb>=rt?'warn':''}">runner ${rb}/${rt}</span>`:""}</div>${flow}`;
 
   // ---- side: instrument cluster + meters + status board ----
   const H=hist||[];
@@ -368,7 +369,7 @@ function render(s,hist,runs,commits,prs){
     return `<div class="srow ${bad?'bad':ok?'ok':''}"><span class="sq ${bad?'bad':ok?'ok':''}"></span>
       <span class="sn">${esc(nm)}</span><span class="sm">${esc(meta||"")}</span><span class="ss">${ok?'aktif':bad?'arıza':esc(active)}</span></div>`;};
   (s.hostServices||[]).forEach(h=>svc+=row(h.name,h.active,h.sub));
-  (s.runners||[]).forEach(r=>svc+=row(r.name,r.active,"runner"));
+  (s.runners||[]).forEach(r=>svc+=row(r.name,r.active,r.busy?"meşgul":"boşta"));
   (s.containers||[]).forEach(c=>svc+=row(c.name.replace(/^airmed-staging-/,"stg/"),c.state!=="running"?"failed":"active",c.healthy?"healthy":c.status));
   if(s.staging&&s.staging.health)svc+=row("api/health",s.staging.health.status==="ok"?"active":"failed","v"+s.staging.health.version);
   svc+=`</div></div>`;
