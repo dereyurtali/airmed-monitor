@@ -75,7 +75,10 @@
   .run-name{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:-.2px;color:var(--ink);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
   .dep{font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;color:var(--clay-on);background:var(--clay);
-    padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:1px}
+    padding:1px 6px;border-radius:2px;margin-left:6px;flex:0 0 auto;align-self:center}
+  /* runner kaynağı: GitHub-hosted (kutu-dışı) vs kutu (self-hosted) */
+  .gh{font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:var(--faint);border:1px solid var(--line);
+    padding:0 5px;border-radius:2px;margin-left:6px;flex:0 0 auto;align-self:center}
   .tag{font-family:var(--mono);font-size:12px;letter-spacing:.5px;flex:0 0 auto;color:var(--faint)}
   .tag b{font-weight:600;font-size:15px}
   .run.r .tag{color:var(--clay-hi)}
@@ -277,6 +280,15 @@ function hms(iso){let s=Math.round((Date.now()-new Date(iso))/1000);if(s<0)s=0;
   return h?`${h}:${String(m%60).padStart(2,"0")}:${String(ss).padStart(2,"0")}`:`${m}:${String(ss).padStart(2,"0")}`;}
 function dur(sec){sec=Number(sec)||0;const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);return d?`${d} g ${h} sa`:h?`${h} sa ${m} dk`:`${m} dk`;}
 const isDeploy=r=>/deploy/i.test((r.name||"")+" "+(r.path||""));
+// run kutudaki self-hosted runner'ı mı yoksa GitHub-hosted'ı mı kullanıyor?
+// job labels (self-hosted vs ubuntu/windows/macos) + runner_name'den çıkar. job verisi yoksa null.
+function runHost(r){
+  const js=r.jobs||[];if(!js.length)return null;
+  const labels=js.flatMap(j=>(j.labels||[]).map(l=>String(l).toLowerCase()));
+  if(labels.includes("self-hosted"))return "self";
+  const names=js.map(j=>String(j.runner_name||""));
+  if(labels.some(l=>/ubuntu|windows|macos/.test(l))||names.some(n=>/^github actions/i.test(n)))return "github";
+  return null;}
 // renk = anlam: yalnız eşik aşılınca tonlanır (aksi halde nötr)
 function lvl(p,warn,crit){p=Number(p);return p>=crit?"var(--brick)":p>=warn?"var(--sand)":"var(--n9)";}
 const cpuC=p=>lvl(p,70,90), memC=p=>lvl(p,80,92), tmpC=t=>t==null?"var(--n9)":lvl(t,65,80);
@@ -316,6 +328,8 @@ function jobRow(j){
 
 function runCard(r,kind,i){
   const pct=runPct(r);const dep=isDeploy(r)?`<span class="dep">DAĞITIM</span>`:"";
+  // yalnız kutu-DIŞI (GitHub-hosted) run'lar işaretlenir; self-hosted = varsayılan, rozetsiz
+  const gh=runHost(r)==="github"?`<span class="gh">GitHub</span>`:"";
   const sub=`<span class="br">${esc(r.head_branch||"")}</span> · ${esc((r.actor&&r.actor.login)||"")} · ${esc(r.event||"")}`;
   const tag=kind==="r"
     ? `<span class="tag mono"><b>${pct}</b>% · <span data-start="${esc(r.run_started_at||r.created_at)}">${hms(r.run_started_at||r.created_at)}</span></span>`
@@ -323,7 +337,7 @@ function runCard(r,kind,i){
   const jobs=(r.jobs&&r.jobs.length)?`<div class="jobs">${r.jobs.map(jobRow).join("")}</div>`:"";
   return `<div class="run ${kind}">
     <div class="run-h"><span class="idx mono">${String(i+1).padStart(2,"0")}</span>
-      <span class="run-name">${esc(r.name||r.display_title)}${dep}</span>${tag}</div>
+      <span class="run-name">${esc(r.name||r.display_title)}</span>${dep}${gh}${tag}</div>
     <div class="run-sub">${sub}</div>
     <div class="meter"><i style="width:${kind==="r"?pct:4}%"></i></div>
     ${jobs}</div>`;}
